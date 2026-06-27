@@ -1,0 +1,787 @@
+% !TeX program = xelatex
+%==============================================================================
+%  BÁO CÁO GIẢI THÍCH BÀI BÁO MedRegA (ICLR 2025)
+%  Dựng trên template báo cáo của nhóm. Biên dịch bằng XeLaTeX (do dùng fontspec).
+%  Sơ đồ được vẽ bằng TikZ.
+%==============================================================================
+\documentclass[12pt,a4paper,oneside]{extarticle}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+
+\usepackage{float}
+\usepackage{adjustbox}
+
+\fontsize{13pt}{15pt}\selectfont
+
+\usepackage[vietnamese]{babel}
+% Font chính: ưu tiên Times New Roman (theo chuẩn báo cáo).
+% Nếu không có (vd trên Overleaf), tự fallback sang TeX Gyre Termes (kèm TeX Live).
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{TeX Gyre Termes}}
+
+%---- Lề trang & line spacing -----------------------------------------------
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=2cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing                            % cách dòng 1.5 (chuẩn báo cáo)
+
+%---- Toán học --------------------------------------------------------------
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{bm}
+\usepackage{mathtools}
+
+%---- Đồ họa, bảng, code ----------------------------------------------------
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{array, tabularx, booktabs, multirow, makecell}
+\usepackage{xcolor}
+\usepackage{listings}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+%---- Hyperlink & mục lục ---------------------------------------------------
+\usepackage[colorlinks=true, linkcolor=black, citecolor=blue,
+            urlcolor=blue, bookmarks=true]{hyperref}
+\usepackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\Large\bfseries}
+
+%---- Header / footer -------------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+%---- Tiêu đề mục (override) ------------------------------------------------
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+%---- Lệnh tiện ích ---------------------------------------------------------
+% chữ thẳng = fact từ paper; chữ nghiêng = nhận xét/trực giác của nhóm.
+\newcommand{\fact}[1]{#1}
+\newcommand{\remark}[1]{\textit{#1}}
+\newcommand{\important}[1]{\textbf{#1}}
+% token đặc biệt của mô hình (đặt tên KHÁC \ref để không đè lệnh tham chiếu của LaTeX)
+\newcommand{\reftok}[1]{\texttt{<ref>#1</ref>}}
+\newcommand{\boxtok}[1]{\texttt{<box>#1</box>}}
+
+%---- Style cho sơ đồ TikZ --------------------------------------------------
+\tikzset{
+  stepbox/.style={draw, rounded corners, align=left, text width=0.84\linewidth,
+                  inner sep=7pt, font=\normalsize},
+  databox/.style={draw, rounded corners, align=left, text width=0.84\linewidth,
+                  inner sep=7pt, font=\normalsize, fill=yellow!8},
+  procbox/.style={draw, rounded corners, align=center, fill=blue!6,
+                  inner sep=6pt, font=\small, minimum height=1cm},
+  iobox/.style={draw, rounded corners, align=center, fill=gray!10,
+                inner sep=6pt, font=\small, minimum height=1cm},
+  fa/.style={-{Stealth[length=2.5mm]}, thick},
+}
+
+%==============================================================================
+\begin{document}
+
+%---- TRANG BÌA -------------------------------------------------------------
+\begin{titlepage}
+\begin{center}
+
+{\large\bfseries ĐẠI HỌC QUỐC GIA TP HỒ CHÍ MINH}\\[2pt]
+{\large\bfseries TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}\\[2pt]
+{\large\bfseries KHOA CÔNG NGHỆ THÔNG TIN}\\[0.5cm]
+
+% Logo trường: bỏ comment nếu có file figures/hcmus-logo.png
+% \includegraphics[width=0.3\textwidth]{figures/hcmus-logo.png}\\[0.5cm]
+\vspace{0.5cm}
+
+{\large BÁO CÁO MÔN HỌC SÂU}\\[6pt]
+
+{\Large\bfseries Đề tài:}\\[8pt]
+{\LARGE\bfseries Mô Hình Ngôn Ngữ Lớn Đa Phương Thức Song Ngữ Có Thể Diễn Giải cho Các Tác Vụ Y Sinh Đa Dạng}\\[1.2cm]
+{\large\bfseries Dựa trên bài báo:}\\[2pt]
+{\large\itshape ``Interpretable Bilingual Multimodal Large Language Model\\
+for Diverse Biomedical Tasks''}\\[2pt]
+{\large Lehan Wang, Haonan Wang, Honglong Yang, Jiaji Mao,\\
+Zehong Yang, Jun Shen, and Xiaomeng Li}\\[2pt]
+{\normalsize The Thirteenth International Conference on Learning Representations\\
+(ICLR 2025)}\\[1cm]
+
+\begin{flushleft}
+\hspace{2cm}\begin{tabular}{ll}
+\textbf{GIÁO VIÊN HƯỚNG DẪN:}   & TS. Nguyễn Tiến Huy \\
+                                & TS. Lê Thanh Tùng\\[8pt]
+
+\textbf{HỌC VIÊN THỰC HIỆN:}  & 25C15029 -- Lê Thị Tường Vy\\
+                              & 25C15008 -- Phạm Ngọc Hiếu\\
+                              & 25C15011 -- Nguyễn Huy Hoàng\\
+                              & 25C11050 -- Nguyễn Đình Lộc\\
+                              & 25C15003 -- Ngô Trương Minh Đạt\\
+\end{tabular}
+\end{flushleft}
+
+\vfill
+{\bfseries TPHCM -- 06/2026}
+
+\end{center}
+\end{titlepage}
+
+%---- MỤC LỤC ---------------------------------------------------------------
+\renewcommand{\contentsname}{MỤC LỤC}
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ============ TÓM TẮT ============
+\section*{Tóm tắt}
+\addcontentsline{toc}{section}{Tóm tắt}
+
+\fact{Bài báo \textbf{MedRegA} (ICLR 2025) giải quyết một hạn chế lớn của các Mô hình Ngôn ngữ
+Lớn Đa phương thức (MLLM) trong y khoa: chúng \emph{"mù vùng"} (region-agnostic) -- nhìn cả ảnh
+như một khối và không biết mình đang nói về vùng nào. Nhóm tác giả đề xuất ý tưởng \emph{lấy vùng
+làm trung tâm} (region-centric): mọi mô tả của mô hình đều phải gắn với một vùng cụ thể trên ảnh
+(bằng \emph{bounding box}). Để hiện thực hóa, nhóm (1) định nghĩa ba tác vụ region-centric,
+(2) tự xây bộ dữ liệu quy mô lớn \textbf{MedRegInstruct} bằng dây chuyền bán tự động, (3) huấn
+luyện mô hình \textbf{MedRegA} với cơ chế suy luận \emph{Regional CoT}.}
+\remark{Tài liệu này giải thích lại bài báo theo hướng dễ hiểu cho người mới, kèm sơ đồ từng bước.}
+
+\newpage
+
+% ============ 1. TỔNG QUAN ============
+\section{Tổng quan: nhóm tác giả đã làm gì?}
+
+\fact{Toàn bộ bài báo có thể tóm thành \important{năm bước lớn} nối tiếp nhau: mỗi bước giải
+quyết một việc và là tiền đề cho bước sau (Hình~\ref{fig:overview}).}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm]
+\node[stepbox, fill=red!6] (b1)
+  {\textbf{Bước 1 — Phát hiện vấn đề.} MLLM y khoa cũ \emph{"mù vùng"}: nhìn cả ảnh như một
+   khối, không biết đang nói về vùng nào $\Rightarrow$ mô tả/chẩn đoán sai, không giải thích được.};
+\node[stepbox, fill=orange!8, below=of b1] (b2)
+  {\textbf{Bước 2 — Định nghĩa 3 tác vụ "region-centric".}
+   (1) Region$\to$Text;\quad(2) Text$\to$Region;\quad(3) Grounded Report Generation.};
+\node[databox, below=of b2] (b3)
+  {\textbf{Bước 3 — Tự xây bộ dữ liệu MedRegInstruct.}
+   Region-Text ($\sim$550K) + Region-Grounded ($\sim$240K), bằng dây chuyền \emph{bán tự động}.};
+\node[stepbox, fill=green!7, below=of b3] (b4)
+  {\textbf{Bước 4 — Huấn luyện mô hình MedRegA.}
+   Nền InternVL; mã hóa vùng bằng token \texttt{<ref>}/\texttt{<box>}; huấn luyện 2 giai đoạn;
+   thêm mẹo suy luận \emph{Regional CoT}.};
+\node[stepbox, fill=blue!7, below=of b4] (b5)
+  {\textbf{Bước 5 — Đánh giá.} Tác vụ truyền thống (VQA, sinh báo cáo, phân loại) + 3 tác vụ
+   vùng; tự đề xuất khung đo \emph{Region-Aligned} $\Rightarrow$ MedRegA đứng đầu.};
+\draw[fa] (b1) -- (b2);
+\draw[fa] (b2) -- (b3);
+\draw[fa] (b3) -- (b4);
+\draw[fa] (b4) -- (b5);
+\end{tikzpicture}
+\caption{Năm bước lớn của bài báo MedRegA. Các phần sau đi sâu vào Bước 2 $\to$ Bước 5.}
+\label{fig:overview}
+\end{figure}
+
+% ============ 2. BA TÁC VỤ REGION-CENTRIC ============
+\section{Ý tưởng cốt lõi: ba tác vụ Region-Centric}
+
+\subsection{Vì sao gọi là "region-centric"?}
+\fact{\textbf{Region} (vùng) là một khu vực trên ảnh -- thường là một cơ quan (gan, phổi,
+tim\ldots) hoặc một tổn thương (khối u). \textbf{Region-centric} nghĩa là "lấy vùng làm trung
+tâm": mọi phát biểu của mô hình đều phải \emph{neo vào một vùng cụ thể}, thay vì nói chung chung
+về cả ảnh (đối lập với \emph{region-agnostic} -- "mù vùng" -- của mô hình cũ).}
+
+\fact{Vùng được biểu diễn bằng \textbf{bounding box}: một hình chữ nhật khoanh vùng, ghi bằng 4
+số $[x_1, y_1, x_2, y_2]$, với $(x_1, y_1)$ là góc trên-trái và $(x_2, y_2)$ là góc dưới-phải
+(Hình~\ref{fig:bbox}).}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\draw[gray!40] (0,0) rectangle (7,4);
+\node[gray] at (0.6,3.7) {\footnotesize ảnh};
+\draw[thick, red] (2,1) rectangle (5.2,3);
+\node at (3.6,2) {\small vùng cần nói};
+\fill (2,3) circle (2pt) node[above left]{\footnotesize $(x_1,y_1)$};
+\fill (5.2,1) circle (2pt) node[below right]{\footnotesize $(x_2,y_2)$};
+\end{tikzpicture}
+\caption{Bounding box $[x_1,y_1,x_2,y_2]$ -- cách mô hình "chỉ tay" vào một vùng.}
+\label{fig:bbox}
+\end{figure}
+
+\fact{Bài định nghĩa \important{ba tác vụ}, tất cả đều xoay quanh quan hệ hai chiều giữa
+\important{VĂN BẢN} (chữ mô tả) và \important{VÙNG} (bounding box).}
+
+\subsection{Tác vụ 1 — Region $\to$ Text (cho vùng, hỏi đó là gì)}
+\begin{itemize}
+  \item \textbf{Đầu vào:} ảnh y khoa $+$ một bounding box (ví dụ: box khoanh giữa lồng ngực).
+  \item \textbf{Đầu ra:} tên cấu trúc/tổn thương trong box. Ví dụ: \emph{"Đây là tim (cardiac
+  silhouette)."}
+  \item \textbf{Mục đích:} kiểm tra mô hình có \emph{hiểu nội dung một vùng} khi được "chỉ" vào.
+\end{itemize}
+\remark{Bài chia nhỏ thành nhận dạng \emph{cấu trúc} (cơ quan, dễ hơn vì to) và nhận dạng
+\emph{tổn thương} (u/ung thư, khó hơn vì nhỏ và đa dạng hình).}
+
+\subsection{Tác vụ 2 — Text $\to$ Region (cho tên, hỏi nằm đâu)}
+\begin{itemize}
+  \item \textbf{Đầu vào:} ảnh y khoa $+$ tên đối tượng (ví dụ: "gan").
+  \item \textbf{Đầu ra:} bounding box vị trí của nó, ví dụ \boxtok{[388, 270, 956, 1281]}.
+  \item \textbf{Mục đích:} mô hình phải \emph{tự định vị} cấu trúc/tổn thương. Đây là chiều
+  ngược của Tác vụ 1.
+\end{itemize}
+
+\subsection{Tác vụ 3 — Grounded Report Generation (sinh báo cáo có định vị)}
+\fact{Đây là tác vụ "đỉnh", kết hợp cả viết báo cáo và chỉ vùng.}
+\begin{itemize}
+  \item \textbf{Đầu vào:} ảnh y khoa.
+  \item \textbf{Đầu ra:} một báo cáo mà \emph{mỗi câu mô tả đi kèm một box}, ví dụ:
+  \begin{itemize}
+    \item \reftok{Phổi trái}\,\boxtok{[\dots]}: thể tích phổi giảm nhẹ\ldots
+    \item \reftok{Bóng tim}\,\boxtok{[\dots]}: tim to vừa\ldots
+    \item \reftok{Gan}\,\boxtok{[\dots]}: thấy nốt giảm tỉ trọng $\sim$35mm\ldots
+  \end{itemize}
+\end{itemize}
+\fact{\emph{"Grounded"} nghĩa là \emph{neo/gắn}: mỗi nhận định được gắn vào bằng chứng (vùng
+ảnh) thay vì chữ trôi nổi.} \remark{Đây chính là điều khiến báo cáo \emph{kiểm chứng được} --
+bác sĩ nhìn box là biết AI căn cứ vào đâu, qua đó tăng tính diễn giải.}
+
+% ============ 3. BỘ DỮ LIỆU ============
+\section{Bộ dữ liệu MedRegInstruct}
+
+\fact{Muốn dạy ba tác vụ trên thì cần dữ liệu ghép \emph{văn bản $\leftrightarrow$ vùng}, nhưng
+chưa có bộ nào đủ lớn và đa cơ quan. Vì vậy nhóm \important{tự xây} bộ \textbf{MedRegInstruct},
+gồm hai bộ con (Bảng~\ref{tab:dataset}).}
+
+\begin{table}[H]
+\centering
+\caption{Hai bộ con của MedRegInstruct.}
+\label{tab:dataset}
+\begin{tabularx}{\textwidth}{l c Y l}
+\toprule
+\textbf{Bộ con} & \textbf{Quy mô} & \textbf{Một mẫu gồm} & \textbf{Phục vụ} \\
+\midrule
+Region-Text     & $\sim$550.000 & (ảnh, cặp hỏi-đáp, vùng) & Tác vụ 1 \& 2 \\
+Region-Grounded & $\sim$240.000 & (ảnh, báo cáo gắn vùng + mô tả từng vùng) & Tác vụ 3 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Bộ Region-Text ($\sim$550K)}
+\fact{\textbf{Nguồn:} \textbf{SA-Med2D-20M} -- bộ dữ liệu \emph{phân đoạn} (segmentation) khổng
+lồ chứa ảnh y khoa 2D của gần như mọi bộ phận cơ thể. Phân đoạn nghĩa là mỗi pixel được dán nhãn
+thuộc cơ quan nào, tạo thành \emph{mặt nạ} (mask) tô màu theo cơ quan. Quy trình tạo dữ liệu gồm
+ba thao tác (Hình~\ref{fig:regiontext}).}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=7mm]
+\node[databox] (s0) {\textbf{SA-Med2D-20M} (ảnh + mặt nạ phân đoạn).};
+\node[databox, below=of s0] (s1)
+  {\textbf{(1) Lọc $\sim$285.000 ảnh} để giữ đa dạng cơ quan và tổn thương.};
+\node[databox, below=of s1] (s2)
+  {\textbf{(2) Chuyển mask $\to$ bounding box} (lấy hình chữ nhật bao quanh mask --
+   chỉ cần định vị thô, không cần đường viền chi li).};
+\node[databox, below=of s2] (s3)
+  {\textbf{(3) Điền tên vùng + tọa độ vào mẫu câu (template)} sẵn $\Rightarrow$ $\sim$550.000
+   cặp hỏi-đáp: một nửa Region$\to$Text, một nửa Text$\to$Region.};
+\draw[fa] (s0)--(s1); \draw[fa] (s1)--(s2); \draw[fa] (s2)--(s3);
+\end{tikzpicture}
+\caption{Quy trình tạo bộ Region-Text từ SA-Med2D-20M.}
+\label{fig:regiontext}
+\end{figure}
+
+\subsection{Bộ Region-Grounded ($\sim$240K)}
+\fact{Phần này khó hơn vì cần \emph{báo cáo thật}, mỗi câu gắn vùng. \textbf{Nguồn} gồm hai kho:
+\textbf{(i) MIMIC-CXR} -- bộ X-quang ngực công khai rất lớn ($\sim$371.920 ảnh, $\sim$227.943 báo
+cáo, $\sim$65.079 bệnh nhân); \textbf{(ii) dữ liệu nội bộ bệnh viện} (Sun Yat-Sen Memorial
+Hospital) -- 25.000 ảnh X-quang/CT/MRI từ 15.000 bệnh nhân, phủ não, bụng, ngực, cột sống, khung
+chậu, báo cáo bằng \emph{tiếng Trung} (nguồn tạo năng lực song ngữ).}
+
+\fact{Quy trình xây dựng tự động gồm \important{ba bước} (tương ứng Hình~3 của bài báo gốc), minh
+họa ở Hình~\ref{fig:pipeline}.}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm]
+\node[databox, fill=blue!6] (p1)
+  {\textbf{Bước 1 — Xây cặp Ảnh--Báo cáo.}
+   MIMIC-CXR: dùng ảnh thẳng + nghiêng, gộp "Findings" + "Impression". Dữ liệu nội bộ: ảnh 3D
+   (CT/MRI) $\to$ lấy \emph{lát cắt trung tâm} làm ảnh 2D đại diện $\Rightarrow$ $\sim$95.000 cặp.};
+\node[databox, fill=green!6, below=of p1] (p2)
+  {\textbf{Bước 2 — Tinh chỉnh Báo cáo.}
+   Báo cáo gốc là một đoạn dài lẫn nhiều cơ quan. Dùng luật để liệt kê cơ quan, rồi dùng LLM
+   \textbf{InternLM} \emph{tách} báo cáo thành mô tả riêng cho từng cơ quan
+   (vd: "Gan: \ldots", "Túi mật: \ldots").};
+\node[databox, fill=orange!8, below=of p2] (p3)
+  {\textbf{Bước 3 — Phát hiện Cấu trúc (gắn tọa độ).}
+   MIMIC-CXR: dùng nhãn box sẵn của \textbf{Chest ImaGenome} (29 vị trí $\to$ chọn 12 ở ngực)
+   $\Rightarrow$ $\sim$220.000 báo cáo. Nội bộ: chưa có box cơ quan $\to$ finetune một MLLM trên
+   bộ Region-Text rồi dùng nó \emph{tự sinh box}; tổn thương thì bác sĩ đã khoanh tay.};
+\node[stepbox, fill=gray!8, below=of p3] (p4)
+  {\centering \textbf{Kết quả: báo cáo có ĐỊNH VỊ -- mỗi câu $\leftrightarrow$ một box}
+   ($\sim$240.000 mẫu).};
+\draw[fa] (p1)--(p2); \draw[fa] (p2)--(p3); \draw[fa] (p3)--(p4);
+\end{tikzpicture}
+\caption{Dây chuyền bán tự động xây bộ Region-Grounded (ba bước).}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{Kiểm định chất lượng}
+\fact{Lấy ngẫu nhiên 50 mẫu, mời 2 chuyên gia gán nhãn tay để so sánh. Độ chính xác tách câu
+(Bước 2) đạt \textbf{93,33\%}; độ chính xác box (Bước 3) đạt \textbf{$\sim$72\%}. Box thường hơi
+lớn hơn nhưng vẫn bao trùm vùng mục tiêu, đủ dùng vì bài chỉ cần định vị.}
+\remark{Thông điệp lớn của phần dữ liệu: thay vì thuê bác sĩ khoanh tay hàng trăm nghìn vùng
+(rất đắt và chậm), nhóm dựng dây chuyền bán tự động dùng dữ liệu sẵn có + AI để tự sinh nhãn vùng
+quy mô lớn. Đây là phần "khôn" nhất của bài.}
+
+% ============ 4. PHƯƠNG PHÁP ============
+\section{Phương pháp: mô hình MedRegA}
+
+\subsection{Mấu chốt: "nhét" tọa độ vào ngôn ngữ}
+\fact{Ý tưởng tinh tế là \emph{coi tọa độ như một phần của chữ}, để mô hình ngôn ngữ (vốn giỏi
+sinh chữ) cũng "đọc/viết" được tọa độ. Box $[x_1,y_1,x_2,y_2]$ được \emph{chuẩn hóa} về số nguyên
+trong khoảng $[0, 1000)$ (không phụ thuộc kích thước ảnh gốc), rồi nhúng vào câu bằng token đặc
+biệt: \reftok{tên đối tượng} đánh dấu "cái gì", \boxtok{[x1,y1,x2,y2]} đánh dấu "ở đâu".}
+
+\fact{Ví dụ mô hình sinh ra: \reftok{vùng bất thường}\boxtok{[340,414,386,436]}.} Nhờ vậy:
+Region$\to$Text là \emph{đọc} tọa độ trong câu hỏi, Text$\to$Region là \emph{viết} ra
+\texttt{<box>\dots</box>}; cả hai đều quy về bài toán sinh văn bản quen thuộc.
+
+\subsection{Kiến trúc (dựa trên InternVL 1.2)}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=6mm and 8mm]
+\node[iobox] (img) {Ảnh};
+\node[procbox, right=of img] (venc) {Vision Encoder\\\footnotesize InternViT-6B};
+\node[procbox, right=of venc] (conn) {Module nối\\\footnotesize (alignment)};
+\node[procbox, right=of conn] (llm) {Language Model\\\footnotesize Nous-Hermes-2-Yi-34B};
+\node[iobox, right=of llm] (out) {Văn bản ra\\\footnotesize (kèm \texttt{<ref>}/\texttt{<box>})};
+\node[iobox, below=14mm of venc] (txt) {Chữ (câu hỏi / chỉ dẫn)};
+\draw[fa] (img)--(venc); \draw[fa] (venc)--(conn); \draw[fa] (conn)--(llm); \draw[fa] (llm)--(out);
+\draw[fa] (txt) -| (llm);
+\end{tikzpicture}
+\caption{Kiến trúc MedRegA: "mắt" (vision encoder) + "phiên dịch" (module nối) + "não" (LLM).}
+\label{fig:arch}
+\end{figure}
+
+\fact{MedRegA gồm ba thành phần với số tham số như Bảng~\ref{tab:params}. Bài báo nêu trực tiếp
+hai con số \textbf{6B} (vision encoder) và \textbf{34B} (mô hình ngôn ngữ); tổng thể $\sim$40 tỷ
+tham số là theo kiến trúc nền InternVL~1.2.}
+
+\begin{table}[H]
+\centering
+\caption{Các thành phần của MedRegA và số tham số tương ứng.}
+\label{tab:params}
+\begin{tabularx}{\textwidth}{l l c Y}
+\toprule
+\textbf{Thành phần} & \textbf{Mô hình cụ thể} & \textbf{Số tham số} & \textbf{Vai trò} \\
+\midrule
+Vision Encoder & InternViT-6B & $\sim$6 tỷ (6B) & "Mắt" -- biến ảnh thành vector đặc trưng \\
+Module nối (alignment) & MLP & nhỏ (bài không nêu) & "Phiên dịch" vector ảnh sang không gian ngôn ngữ \\
+Language Model & Nous-Hermes-2-Yi-34B & $\sim$34 tỷ (34B) & "Não" -- đọc ảnh + chữ, sinh câu trả lời kèm \texttt{<ref>}/\texttt{<box>} \\
+\midrule
+\multicolumn{2}{l}{\textbf{TỔNG (nền InternVL 1.2)}} & \textbf{$\sim$40 tỷ (40B)} & Toàn bộ mô hình \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\remark{Lưu ý quan trọng: không phải toàn bộ $\sim$40B tham số đều được cập nhật khi huấn luyện.
+Ở giai đoạn căn chỉnh chỉ huấn luyện module nối; ở giai đoạn tinh chỉnh theo chỉ dẫn, mô hình ngôn
+ngữ được tối ưu bằng \textbf{LoRA} (Low-Rank Adaptation) -- chỉ thêm và huấn luyện một lượng nhỏ
+tham số "adapter", giữ nguyên trọng số gốc nên tiết kiệm bộ nhớ và chi phí (chi tiết ở
+Mục~\ref{ssec:training}).}
+
+\subsection{Huấn luyện hai giai đoạn}
+\label{ssec:training}
+\fact{Quá trình huấn luyện chia hai giai đoạn (Hình~\ref{fig:training}). Ký hiệu: \textbf{[đóng
+băng]} = không cập nhật trọng số; \textbf{[huấn luyện]} = được cập nhật.}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm]
+\node[stepbox, fill=cyan!6] (g1)
+  {\textbf{Giai đoạn 1 — Alignment (căn chỉnh).}
+   Vision Encoder \textbf{[đóng băng]}, Module nối \textbf{[huấn luyện]}, LLM \textbf{[đóng băng]}.
+   Dữ liệu: ảnh y khoa + chú thích (captioning). Mục tiêu: dạy module nối "phiên dịch" ảnh y
+   khoa sang ngôn ngữ.};
+\node[stepbox, fill=green!7, below=of g1] (g2)
+  {\textbf{Giai đoạn 2 — Instruction tuning (tinh chỉnh theo chỉ dẫn).}
+   Chỉ \textbf{[huấn luyện]} LLM. Dữ liệu: bộ công khai (VQA, báo cáo, phân loại) + MedRegInstruct
+   (3 tác vụ vùng). Mỗi tác vụ có chỉ dẫn riêng. Hàm mất mát: loss của mô hình ngôn ngữ.};
+\draw[fa] (g1)--(g2);
+\end{tikzpicture}
+\caption{Huấn luyện hai giai đoạn cho ra một mô hình đa năng và song ngữ.}
+\label{fig:training}
+\end{figure}
+
+\subsubsection*{Chi tiết Giai đoạn 1 (Alignment)}
+\fact{\textbf{Train cái gì:} chỉ \important{module nối} (connector); Vision Encoder và LLM được
+đóng băng. \textbf{Dữ liệu:} các cặp \important{ảnh y khoa + chú thích (caption)} -- tức "nhìn
+ảnh, viết mô tả", \emph{chưa có bounding box} ở giai đoạn này. Bài dùng tổng $\sim$2,4 triệu cặp
+từ hai bộ: \textbf{PMC-OA} ($\sim$1,6 triệu cặp ảnh--caption trích từ PubMed Central, phủ đa dạng
+phương thức và bệnh) và \textbf{QUILT} ($\sim$802.144 cặp ảnh--text trích từ video YouTube + phụ
+đề, thiên về giải phẫu bệnh). \textbf{Mục tiêu:} dạy module nối "phiên dịch" đặc trưng ảnh y khoa
+sang đúng không gian ngôn ngữ của LLM -- tức bắc \emph{cây cầu} giữa "mắt" và "não" trước khi dạy
+các kỹ năng phức tạp hơn ở giai đoạn 2.}
+
+\fact{\textbf{Một số chi tiết kỹ thuật khác} (Appendix~B của bài gốc): giai đoạn tinh chỉnh
+(Giai đoạn 2) dùng $\sim$2,2 triệu mẫu; mô hình ngôn ngữ được tối ưu bằng \textbf{LoRA} kết hợp
+\textbf{DeepSpeed ZeRO Stage 3}; huấn luyện trên \textbf{16 GPU NVIDIA H800} (1 epoch ở giai đoạn
+căn chỉnh, 2 epoch ở giai đoạn tinh chỉnh).}
+
+\subsubsection*{Chi tiết Giai đoạn 2 (Instruction tuning)}
+\fact{\textbf{Train cái gì:} chỉ \important{mô hình ngôn ngữ (LLM)} -- và qua \textbf{LoRA} (chỉ
+thêm/chỉnh một lượng nhỏ tham số "adapter"); Vision Encoder và Module nối được đóng băng.
+\textbf{Dữ liệu ($\sim$2,2 triệu mẫu):} trộn nhiều nhóm tác vụ, mỗi mẫu có dạng \emph{(ảnh + câu
+chỉ dẫn) $\to$ câu trả lời mẫu}. Tóm tắt từng nhóm ở Bảng~\ref{tab:stage2data}.}
+
+\begin{table}[H]
+\centering
+\caption{Các nhóm dữ liệu ở Giai đoạn 2: dạng dữ liệu, có bounding box hay không, và kỹ năng
+mô hình học được.}
+\label{tab:stage2data}
+\small
+\begin{tabularx}{\textwidth}{l Y c Y}
+\toprule
+\textbf{Nhóm} & \textbf{Dữ liệu trông như thế nào} & \textbf{Có box?} & \textbf{Học được gì} \\
+\midrule
+VQA & Ảnh + 1 câu hỏi $\to$ câu trả lời ngắn (SLAKE, VQA-RAD, PathVQA, PMC-VQA\ldots; có cả
+tiếng Trung) & Không & Đối thoại y khoa: suy ra phương thức, cấu trúc, bệnh khả dĩ \\
+\addlinespace
+Sinh báo cáo & Ảnh + chỉ dẫn $\to$ cả đoạn báo cáo dài (MIMIC-CXR, IU-Xray, báo cáo tiếng Trung
+nội bộ) & Không & Viết đoạn mô tả dài, mạch lạc, đúng văn phong; song ngữ \\
+\addlinespace
+Phân loại & Ảnh + chỉ dẫn $\to$ (các) nhãn bệnh/cấu trúc; đơn nhãn (MURA, OCT2017\ldots) hoặc
+đa nhãn (CheXpert, BRSET, VinDr-Mammo\ldots) & Không & Gán nhãn trên 8 phương thức (X-quang,
+OCT, đáy mắt, da, mô bệnh học\ldots) \\
+\addlinespace
+3 tác vụ vùng & Region$\to$Text: ảnh+box $\to$ tên; Text$\to$Region: ảnh+tên $\to$ \texttt{<box>};
+Grounded Report: ảnh $\to$ báo cáo mỗi câu kèm box & \textbf{Có} & Năng lực \emph{region-centric}:
+đọc và viết tọa độ, gắn mô tả vào đúng vùng \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\fact{\textbf{Không phải mọi dữ liệu đều có region.} Chỉ nhóm \important{3 tác vụ vùng} (lấy từ bộ
+tự xây \textbf{MedRegInstruct}) mới có bounding box: phần Region-Text ($\sim$550K) đến từ
+\textbf{SA-Med2D-20M} (đổi mask phân đoạn $\to$ box), phần Region-Grounded ($\sim$240K) đến từ
+\textbf{MIMIC-CXR} (box sẵn của Chest ImaGenome) và \textbf{dữ liệu nội bộ}. Các bộ VQA/báo
+cáo/phân loại công khai là \emph{cấp độ ảnh}, đáp án chỉ là văn bản, không có box.}
+
+\fact{\textbf{Huấn luyện theo chỉ dẫn (instruction) nghĩa là gì:} mỗi mẫu kèm một câu chỉ dẫn nói
+rõ đang yêu cầu tác vụ nào (vd \emph{"Hãy phân loại bệnh trong ảnh"} hay \emph{"Định vị gan và
+xuất bounding box"}). Nhờ đó, dù trộn chung, mô hình \emph{học từ chỉ dẫn} để biết khi nào cần
+xuất tọa độ, khi nào chỉ trả lời văn bản -- mẫu nào không yêu cầu box thì đáp án mẫu cũng không có
+box nên cross-entropy không ép mô hình sinh box ở đó.}
+\remark{Tóm lại, Giai đoạn 2 dạy "não" (LLM) làm \emph{mọi} tác vụ -- và riêng nhóm 3 tác vụ vùng
+là nơi mô hình học kỹ năng mới: sinh tọa độ box.}
+
+\subsection{Mẹo lúc suy luận: Regional CoT}
+\fact{\textbf{CoT (Chain-of-Thought)} là "chuỗi suy luận": thay vì trả lời ngay, mô hình "nghĩ
+nháp" trước rồi mới kết luận. \textbf{Regional CoT} là CoT bằng \emph{vùng}: ép mô hình phát hiện
+vùng trước, rồi mới suy luận (Hình~\ref{fig:cot}).}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=9mm]
+\node[stepbox, fill=orange!7] (c1)
+  {\textbf{Stage 1 — Phát hiện vùng.}
+   Đầu vào: ảnh + yêu cầu "khoanh các vùng bất thường" $\Rightarrow$ mô hình sinh ra các
+   \texttt{<box>[\dots]}.};
+\node[stepbox, fill=green!7, below=of c1] (c2)
+  {\textbf{Stage 2 — Suy luận dựa trên vùng.}
+   Đầu vào: ảnh + câu hỏi + \emph{các vùng vừa phát hiện} $\Rightarrow$ mô hình trả lời/chẩn đoán.};
+\draw[fa] (c1) -- node[right, font=\small\itshape, text width=3.2cm]
+  {đưa vùng vừa tìm được vào lại làm gợi ý} (c2);
+\end{tikzpicture}
+\caption{Regional CoT: phát hiện vùng trước (Stage 1) $\to$ suy luận sau (Stage 2).}
+\label{fig:cot}
+\end{figure}
+
+\remark{Trực giác: giống bác sĩ khoanh vùng nghi ngờ rồi mới kết luận, thay vì phán bừa khi nhìn
+lướt.} \fact{Hiệu quả rõ rệt ở phân loại đa nhãn trên bộ VinDr-SpineXR (X-quang cột sống):
+MedRegA + Regional CoT đạt \textbf{F1 = 61,75\%}, cao hơn MedDr $\sim$34,95\% và cao hơn chính
+MedRegA-không-CoT $\sim$31,59\%. Lý do: Regional CoT buộc mô hình nối từng vùng cục bộ với từng
+nhãn bệnh, thay vì gộp cả ảnh tổng thể với tất cả nhãn cùng lúc.}
+
+% ============ 5. ĐÁNH GIÁ ============
+\section{Đánh giá hiệu năng mô hình}
+
+Phần thực nghiệm của bài báo nhằm đánh giá hai năng lực chính của MedRegA. Thứ nhất là năng lực xử lý các tác vụ y sinh đa phương thức phổ biến, bao gồm hỏi đáp hình ảnh y khoa, sinh báo cáo y khoa và phân loại ảnh y khoa. Thứ hai là năng lực xử lý các tác vụ theo vùng ảnh, trong đó mô hình không chỉ cần hiểu toàn bộ ảnh mà còn phải nhận diện, định vị và liên kết kết quả đầu ra với từng vùng cụ thể trên ảnh.
+
+Các mô hình baseline được sử dụng để so sánh gồm Med-Flamingo, LLaVA-Med, RadFM, MedDr, BiomedGPT và InternVL. Trong đó, Med-Flamingo, LLaVA-Med, RadFM, MedDr và BiomedGPT là các mô hình đa phương thức được phát triển hoặc tinh chỉnh cho lĩnh vực y khoa. InternVL là một mô hình vision-language tổng quát có năng lực mạnh về xử lý ảnh và văn bản, được dùng làm baseline quan trọng cho các tác vụ liên quan đến phát hiện vùng ảnh.
+
+Điểm khác biệt chính của MedRegA so với các baseline là mô hình được huấn luyện trên dữ liệu region-centric, tức là dữ liệu có liên kết trực tiếp giữa ảnh y khoa, văn bản và bounding box. Nhờ đó, MedRegA không chỉ tạo câu trả lời hoặc báo cáo từ toàn ảnh, mà còn có thể chỉ ra câu trả lời đó liên quan đến vùng nào trên ảnh. Đây là yếu tố quan trọng giúp mô hình có tính diễn giải tốt hơn trong bối cảnh y khoa.
+
+\subsection{Hiệu năng trên các tác vụ y sinh đa phương thức}
+
+Trước hết, bài báo đánh giá MedRegA trên các tác vụ y sinh đa phương thức tổng quát. Đây là nhóm tác vụ kiểm tra khả năng hiểu ảnh y khoa và văn bản ở mức toàn ảnh, chưa yêu cầu mô hình phải chỉ ra vùng cụ thể. Kết quả được trình bày trong Bảng~\ref{tab:general_performance}.
+
+Ở tác vụ hỏi đáp hình ảnh y khoa tiếng Anh, MedRegA đạt BLEU-1 là 67.65 và F1-score là 68.33. So với baseline tốt nhất tương ứng là MedDr, mô hình cải thiện 1.93 điểm BLEU-1 và 1.46 điểm F1-score. Ngoài ra, MedRegA đạt BERTScore là 84.67, cao hơn MedDr với 77.80. Điều này cho thấy câu trả lời của MedRegA có mức độ tương đồng ngữ nghĩa tốt hơn với câu trả lời tham chiếu.
+
+Tuy nhiên, MedRegA không vượt baseline ở tất cả các chỉ số của English VQA. Ở Close Accuracy, BiomedGPT đạt 86.40, cao hơn MedRegA với 83.25. Ở Open Recall, LLaVA-Med đạt 63.51, cao hơn MedRegA với 53.35. Điều này cho thấy MedRegA mạnh ở chất lượng sinh câu trả lời và độ tương đồng ngữ nghĩa, nhưng vẫn còn hạn chế ở một số dạng câu hỏi đóng hoặc câu hỏi mở yêu cầu độ bao phủ cao.
+
+Ở tác vụ hỏi đáp hình ảnh y khoa tiếng Trung, MedRegA thể hiện sự cải thiện rất rõ. Mô hình đạt BLEU-1 là 60.89, F1-score là 62.66, Accuracy là 58.64 và Recall là 62.01. Các kết quả này đều cao hơn đáng kể so với baseline tốt nhất. Điều này cho thấy MedRegA tận dụng tốt dữ liệu song ngữ trong quá trình huấn luyện, từ đó cải thiện khả năng xử lý các tác vụ y khoa ngoài tiếng Anh.
+
+Đối với tác vụ sinh báo cáo tiếng Anh, MedRegA đạt BLEU-1 là 40.46, cao hơn MedDr với 34.49. Mức cải thiện 5.97 điểm BLEU-1 cho thấy báo cáo do MedRegA sinh ra gần với báo cáo tham chiếu hơn. Ngoài ra, MedRegA cũng đạt BLEU-4 là 12.60, METEOR là 31.94, ROUGE-L là 27.57 và BERTScore là 62.54, đều cao hơn baseline tốt nhất tương ứng. Điều này chứng minh mô hình cải thiện chất lượng báo cáo ở cả mức từ vựng, cấu trúc câu và ngữ nghĩa.
+
+Ở tác vụ sinh báo cáo tiếng Trung, MedRegA đạt BLEU-1 là 40.76, trong khi baseline tốt nhất chỉ đạt 11.99. Khoảng cách 28.77 điểm BLEU-1 cho thấy ưu thế rất lớn của MedRegA trong bối cảnh song ngữ. Kết quả này đặc biệt quan trọng vì dữ liệu và ứng dụng y khoa không chỉ giới hạn trong tiếng Anh.
+
+Với phân loại ảnh y khoa, MedRegA cũng đạt kết quả tốt hơn baseline. Ở phân loại một nhãn, mô hình đạt F1-score là 47.97, cao hơn MedDr với 32.65. Ở phân loại nhiều nhãn, MedRegA đạt F1-score là 13.32, cao hơn baseline tốt nhất với 9.38. Dù kết quả multi-label classification vẫn còn thấp, sự cải thiện này cho thấy MedRegA có khả năng nhận diện tốt hơn các dấu hiệu bệnh lý trong ảnh.
+
+\begin{table}[htbp]
+\centering
+\caption{So sánh MedRegA với baseline tốt nhất trên các tác vụ y sinh đa phương thức}
+\label{tab:general_performance}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llccc}
+\toprule
+\textbf{Tác vụ} & \textbf{Chỉ số} & \textbf{Baseline tốt nhất} & \textbf{MedRegA} & \textbf{Chênh lệch} \\
+\midrule
+English VQA & BLEU-1 & 65.72 & 67.65 & +1.93 \\
+English VQA & F1-score & 66.87 & 68.33 & +1.46 \\
+English VQA & Close Accuracy & 86.40 & 83.25 & -3.15 \\
+English VQA & Open Recall & 63.51 & 53.35 & -10.16 \\
+English VQA & BERTScore & 77.80 & 84.67 & +6.87 \\
+\midrule
+Chinese VQA & BLEU-1 & 39.73 & 60.89 & +21.16 \\
+Chinese VQA & F1-score & 40.95 & 62.66 & +21.71 \\
+Chinese VQA & Accuracy & 38.02 & 58.64 & +20.62 \\
+Chinese VQA & Recall & 40.20 & 62.01 & +21.81 \\
+Chinese VQA & BERTScore & 87.58 & 91.63 & +4.05 \\
+\midrule
+English Report Generation & BLEU-1 & 34.49 & 40.46 & +5.97 \\
+English Report Generation & BLEU-4 & 10.02 & 12.60 & +2.58 \\
+English Report Generation & METEOR & 27.70 & 31.94 & +4.24 \\
+English Report Generation & ROUGE-L & 26.45 & 27.57 & +1.12 \\
+English Report Generation & BERTScore & 55.12 & 62.54 & +7.42 \\
+\midrule
+Chinese Report Generation & BLEU-1 & 11.99 & 40.76 & +28.77 \\
+Chinese Report Generation & BLEU-4 & 1.85 & 18.74 & +16.89 \\
+Chinese Report Generation & METEOR & 10.71 & 34.03 & +23.32 \\
+Chinese Report Generation & ROUGE-L & 12.90 & 22.98 & +10.08 \\
+Chinese Report Generation & BERTScore & 62.54 & 71.11 & +8.57 \\
+\midrule
+Single-label Classification & F1-score & 32.65 & 47.97 & +15.32 \\
+Multi-label Classification & F1-score & 9.38 & 13.32 & +3.94 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+Từ Bảng~\ref{tab:general_performance}, có thể thấy MedRegA đạt kết quả tốt trên phần lớn các tác vụ tổng quát. Mức cải thiện đặc biệt rõ ở Chinese VQA, Chinese Report Generation và Single-label Classification. Điều này cho thấy MedRegA không chỉ là một mô hình chuyên cho region grounding, mà vẫn giữ được năng lực xử lý đa tác vụ trong y sinh.
+
+\subsection{Hiệu năng trên tác vụ nhận diện vùng sang văn bản}
+
+Tác vụ nhận diện vùng sang văn bản kiểm tra khả năng hiểu một vùng cụ thể trên ảnh. Đầu vào của mô hình là một ảnh y khoa cùng với một bounding box đã được chỉ định. Nhiệm vụ của mô hình là mô tả vùng đó là gì, ví dụ như một cấu trúc giải phẫu hoặc một vùng tổn thương.
+
+Kết quả của tác vụ này được chia thành hai nhóm: nhận diện cấu trúc giải phẫu và nhận diện tổn thương. Nhận diện cấu trúc giải phẫu thường dễ hơn vì các vùng như phổi, tim, não hoặc cột sống có kích thước lớn và hình dạng tương đối ổn định. Ngược lại, nhận diện tổn thương khó hơn vì tổn thương thường nhỏ, hình dạng đa dạng và dễ bị che lẫn với mô xung quanh.
+
+Kết quả trong Bảng~\ref{tab:region_to_text} cho thấy MedRegA vượt rất xa các baseline. Ở nhóm nhận diện cấu trúc giải phẫu, MedRegA đạt BLEU-1 là 78.34, F1-score là 78.95, Recall là 79.02, Accuracy là 73.06 và BERTScore là 91.63. Trong khi đó, các baseline đều có F1-score dưới 2.0. Điều này cho thấy các mô hình baseline gần như không thể hiểu được vùng ảnh được chỉ định bằng bounding box.
+
+Ở nhóm nhận diện tổn thương, MedRegA đạt BLEU-1 là 61.09, F1-score là 61.90, Recall là 63.07, Accuracy là 59.42 và BERTScore là 82.62. Dù kết quả thấp hơn so với nhận diện cấu trúc giải phẫu, MedRegA vẫn vượt rất xa các baseline. Baseline tốt nhất chỉ đạt F1-score là 1.35. Kết quả này cho thấy MedRegA học được mối quan hệ giữa vùng ảnh và mô tả y khoa, thay vì chỉ xử lý ảnh ở mức toàn cục.
+
+\begin{table}[htbp]
+\centering
+\caption{Kết quả trên tác vụ nhận diện vùng sang văn bản}
+\label{tab:region_to_text}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llcccccc}
+\toprule
+\textbf{Nhóm tác vụ} & \textbf{Chỉ số} & \textbf{Med-Flamingo} & \textbf{LLaVA-Med} & \textbf{RadFM} & \textbf{MedDr} & \textbf{InternVL} & \textbf{MedRegA} \\
+\midrule
+Cấu trúc giải phẫu & BLEU-1 & 0.24 & 0.35 & 0.22 & 0.93 & 0.13 & 78.34 \\
+Cấu trúc giải phẫu & F1 & 1.33 & 0.94 & 0.44 & 1.64 & 0.21 & 78.95 \\
+Cấu trúc giải phẫu & Recall & 9.40 & 7.33 & 2.00 & 4.66 & 0.52 & 79.02 \\
+Cấu trúc giải phẫu & Accuracy & -- & 1.30 & 2.62 & 2.71 & -- & 73.06 \\
+Cấu trúc giải phẫu & BERTScore & 26.58 & 34.88 & 38.28 & 51.18 & 51.78 & 91.63 \\
+\midrule
+Tổn thương & BLEU-1 & 0.01 & 0.51 & 0.47 & 0.57 & 0.13 & 61.09 \\
+Tổn thương & F1 & 0.10 & 1.35 & 1.15 & 0.89 & 0.20 & 61.90 \\
+Tổn thương & Recall & 0.39 & 14.05 & 7.49 & 2.37 & 0.51 & 63.07 \\
+Tổn thương & Accuracy & 0.02 & 2.18 & 1.14 & -- & -- & 59.42 \\
+Tổn thương & BERTScore & 23.16 & 34.18 & 35.86 & 49.38 & 47.92 & 82.62 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+Kết quả này chứng minh một điểm quan trọng: khả năng hiểu vùng ảnh không tự nhiên xuất hiện chỉ nhờ mô hình có khả năng xử lý ảnh và văn bản. Các baseline có thể làm tốt một số tác vụ image-level, nhưng không được huấn luyện để hiểu bounding box y khoa. Ngược lại, MedRegA được huấn luyện trực tiếp bằng dữ liệu region-centric, nên có thể ánh xạ vùng ảnh sang mô tả văn bản tương ứng.
+
+\subsection{Hiệu năng trên tác vụ phát hiện vùng từ văn bản}
+
+Tác vụ phát hiện vùng từ văn bản là chiều ngược lại của tác vụ nhận diện vùng sang văn bản. Ở tác vụ này, đầu vào là một mô tả bằng văn bản, và mô hình phải tìm vùng ảnh tương ứng bằng cách sinh bounding box. Ví dụ, nếu người dùng yêu cầu tìm vùng phổi phải hoặc vùng tổn thương, mô hình cần trả về tọa độ của vùng đó trên ảnh.
+
+Đây là một bài toán khó vì mô hình phải thực hiện đồng thời hai việc: hiểu đối tượng được mô tả trong văn bản và định vị chính xác đối tượng đó trên ảnh. Phần lớn các medical MLLM baseline không thể thực hiện tốt tác vụ này vì chúng không được thiết kế để sinh tọa độ bounding box hợp lệ. Vì vậy, bài báo sử dụng InternVL làm baseline chính cho tác vụ này.
+
+Kết quả trong Bảng~\ref{tab:text_to_region} cho thấy MedRegA vượt InternVL ở tất cả các chỉ số. MedRegA đạt Object F1 là 77.93, cao hơn InternVL với 56.60. Ở Region F1, MedRegA đạt 38.24, trong khi InternVL chỉ đạt 6.70. Ở Alignment F1, MedRegA đạt 36.53, cao hơn InternVL với 5.45. Chỉ số IoU của MedRegA là 23.43, gần gấp đôi InternVL với 12.28.
+
+\begin{table}[htbp]
+\centering
+\caption{Kết quả trên tác vụ phát hiện vùng từ văn bản}
+\label{tab:text_to_region}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Chỉ số} & \textbf{InternVL} & \textbf{MedRegA} & \textbf{Chênh lệch} \\
+\midrule
+Object F1 & 56.60 & 77.93 & +21.33 \\
+Region F1 & 6.70 & 38.24 & +31.54 \\
+Alignment F1 & 5.45 & 36.53 & +31.08 \\
+IoU & 12.28 & 23.43 & +11.15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Các chỉ số trong tác vụ này phản ánh nhiều khía cạnh khác nhau. Object F1 cho biết mô hình có nhận diện đúng đối tượng được nhắc đến trong văn bản hay không. Region F1 đánh giá khả năng phát hiện đúng vùng ảnh. Alignment F1 đo mức độ căn chỉnh giữa đối tượng trong văn bản và vùng ảnh được dự đoán. IoU đo mức độ chồng khớp giữa bounding box dự đoán và bounding box thật.
+
+Việc MedRegA cải thiện mạnh ở Region F1 và Alignment F1 cho thấy mô hình không chỉ hiểu tên đối tượng trong câu hỏi, mà còn học được cách liên kết đối tượng đó với vị trí cụ thể trên ảnh. Đây là năng lực rất quan trọng trong y khoa, vì kết luận của mô hình cần được gắn với bằng chứng trực quan thay vì chỉ sinh ra văn bản chung chung.
+
+\subsection{Hiệu năng trên tác vụ sinh báo cáo có căn cứ vùng ảnh}
+
+Sinh báo cáo có căn cứ vùng ảnh là một trong những tác vụ quan trọng nhất của bài báo. Trong sinh báo cáo y khoa thông thường, mô hình chỉ cần tạo văn bản mô tả ảnh. Tuy nhiên, trong grounded report generation, mô hình phải tạo báo cáo đồng thời liên kết các mô tả trong báo cáo với vùng ảnh tương ứng. Điều này giúp người dùng kiểm chứng xem từng câu trong báo cáo dựa trên vùng nào của ảnh.
+
+Kết quả trong Bảng~\ref{tab:grounded_report} cho thấy MedRegA vượt MedDr và InternVL ở cả chất lượng văn bản lẫn khả năng grounding. Về chất lượng báo cáo, MedRegA đạt BLEU-1 là 33.18, ROUGE-L là 21.64 và BERTScore là 55.37. Các chỉ số này đều cao hơn MedDr và InternVL. Ngoài ra, MedRegA đạt CheXBert là 39.00 và RadGraph là 25.23, cho thấy báo cáo của mô hình có nội dung phù hợp hơn về mặt lâm sàng.
+
+Điểm khác biệt lớn nhất nằm ở các chỉ số liên quan đến vùng ảnh. MedDr không hỗ trợ grounding nên không có kết quả ở các chỉ số Object, Region, Alignment và IoU. InternVL có thể sinh vùng nhưng kết quả rất thấp, với Object là 0.23, Region là 0.57, Alignment là 0.12 và IoU là 0.38. Trong khi đó, MedRegA đạt Object là 62.65, Region là 76.59, Alignment là 62.29 và IoU là 52.07.
+
+\begin{table}[htbp]
+\centering
+\caption{Kết quả trên tác vụ sinh báo cáo có căn cứ vùng ảnh cho ảnh X-ray ngực}
+\label{tab:grounded_report}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcccccccccc}
+\toprule
+\textbf{Mô hình} & \textbf{BLEU-1} & \textbf{ROUGE-L} & \textbf{BERTScore} & \textbf{CheXBert} & \textbf{RadGraph} & \textbf{RadCliQ} & \textbf{Object} & \textbf{Region} & \textbf{Alignment} & \textbf{IoU} \\
+\midrule
+MedDr & 27.43 & 18.23 & 53.00 & 25.37 & 14.76 & 1.14 & -- & -- & -- & -- \\
+InternVL & 19.46 & 12.20 & 16.07 & 26.75 & 9.33 & 1.42 & 0.23 & 0.57 & 0.12 & 0.38 \\
+MedRegA & 33.18 & 21.64 & 55.37 & 39.00 & 25.23 & 0.96 & 62.65 & 76.59 & 62.29 & 52.07 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+Kết quả này cho thấy một mô hình vision-language mạnh như InternVL vẫn chưa đủ để giải quyết tốt bài toán grounded report generation trong y khoa. Lý do là tác vụ này không chỉ yêu cầu hiểu ảnh và sinh văn bản, mà còn yêu cầu căn chỉnh chính xác giữa từng phần mô tả trong báo cáo và vùng ảnh tương ứng. MedRegA làm tốt hơn vì mô hình được huấn luyện bằng dữ liệu có liên kết trực tiếp giữa ảnh, văn bản và bounding box.
+
+Về mặt ứng dụng, đây là kết quả rất quan trọng. Một báo cáo y khoa do AI sinh ra sẽ đáng tin cậy hơn nếu người dùng có thể biết mỗi câu mô tả dựa trên vùng nào trong ảnh. Nhờ khả năng grounding, MedRegA làm cho đầu ra của mô hình minh bạch hơn và dễ kiểm chứng hơn.
+
+\subsection{Ảnh hưởng của Regional Chain-of-Thought}
+
+Bài báo cũng đánh giá hiệu quả của Regional Chain-of-Thought, gọi tắt là Regional CoT. Ý tưởng của Regional CoT là thay vì để mô hình trả lời trực tiếp từ toàn bộ ảnh, mô hình được hướng dẫn xác định vùng bất thường hoặc vùng quan trọng trước, sau đó sử dụng thông tin vùng đó để đưa ra kết luận.
+
+Cách tiếp cận này gần với quy trình đọc ảnh y khoa của bác sĩ. Trong thực tế, bác sĩ thường quan sát toàn bộ ảnh trước, sau đó tập trung vào các vùng nghi ngờ để đánh giá chi tiết hơn. Regional CoT đưa quy trình này vào quá trình suy luận của mô hình.
+
+Kết quả trong Bảng~\ref{tab:regional_cot} cho thấy Regional CoT giúp cải thiện hiệu năng rõ rệt. Trên VinDr-CXR, F1-score tăng từ 11.89 lên 19.74. Trên VinDr-PCXR, F1-score tăng từ 6.33 lên 16.49. Trên VinDr-SpineXR, mức tăng đặc biệt lớn, từ 30.16 lên 61.75. Điều này cho thấy việc buộc mô hình tập trung vào vùng bất thường giúp cải thiện đáng kể khả năng phân loại, đặc biệt ở các bài toán nhiều nhãn.
+
+Trên SLAKE, Regional CoT cũng giúp cải thiện kết quả hỏi đáp hình ảnh y khoa. BLEU-1 tăng từ 81.55 lên 84.61, F1-score tăng từ 82.06 lên 85.32, Close Accuracy tăng từ 85.35 lên 87.89 và Open Recall tăng từ 80.45 lên 83.61. Điều này cho thấy thông tin vùng ảnh không chỉ hữu ích cho phân loại bệnh, mà còn giúp mô hình trả lời câu hỏi y khoa chính xác hơn.
+
+\begin{table}[htbp]
+\centering
+\caption{Ảnh hưởng của Regional Chain-of-Thought}
+\label{tab:regional_cot}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Dataset} & \textbf{Chỉ số} & \textbf{MedDr} & \textbf{MedRegA không dùng Regional CoT} & \textbf{MedRegA có dùng Regional CoT} & \textbf{Chênh lệch} \\
+\midrule
+VinDr-CXR & F1 & 7.11 & 11.89 & 19.74 & +7.85 \\
+VinDr-PCXR & F1 & 8.20 & 6.33 & 16.49 & +10.16 \\
+VinDr-SpineXR & F1 & 26.80 & 30.16 & 61.75 & +31.59 \\
+VinDr-Mammo & F1 & 8.87 & 9.99 & 12.91 & +2.92 \\
+SLAKE & BLEU-1 & 76.40 & 81.55 & 84.61 & +3.06 \\
+SLAKE & F1 & 77.50 & 82.06 & 85.32 & +3.26 \\
+SLAKE & Close Accuracy & 83.40 & 85.35 & 87.89 & +2.54 \\
+SLAKE & Open Recall & 74.20 & 80.45 & 83.61 & +3.16 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+Kết quả này củng cố luận điểm chính của bài báo: thông tin vùng ảnh đóng vai trò quan trọng trong medical multimodal reasoning. Khi mô hình biết tập trung vào vùng bất thường trước khi trả lời, hiệu năng được cải thiện rõ rệt. Điều này cho thấy region grounding không chỉ giúp mô hình dễ giải thích hơn, mà còn có thể cải thiện trực tiếp độ chính xác của mô hình.
+
+\subsection{Thảo luận kết quả}
+
+Từ các kết quả thực nghiệm, có thể rút ra bốn nhận xét chính.
+
+Thứ nhất, MedRegA đạt hiệu năng tốt trên nhiều tác vụ y sinh đa phương thức tổng quát. Mô hình cải thiện nhiều chỉ số quan trọng như BLEU-1, F1-score, METEOR, ROUGE-L và BERTScore. Điều này cho thấy việc bổ sung dữ liệu và nhiệm vụ region-centric không làm suy giảm năng lực tổng quát của mô hình.
+
+Thứ hai, khả năng song ngữ là một điểm mạnh rõ rệt của MedRegA. Mức cải thiện lớn ở Chinese VQA và Chinese Report Generation cho thấy mô hình không chỉ hoạt động tốt trong tiếng Anh, mà còn xử lý hiệu quả dữ liệu y khoa bằng tiếng Trung. Đây là một ưu điểm quan trọng vì dữ liệu y khoa thực tế thường tồn tại ở nhiều ngôn ngữ khác nhau.
+
+Thứ ba, ưu thế lớn nhất của MedRegA nằm ở các tác vụ liên quan đến vùng ảnh. Ở Region-to-Text Identification, Text-to-Region Detection và Grounded Report Generation, MedRegA vượt xa các baseline. Các mô hình baseline có thể hiểu ảnh ở mức toàn cục, nhưng không thể liên kết chính xác giữa văn bản và vùng ảnh cụ thể. Đây chính là hạn chế mà MedRegA giải quyết.
+
+Thứ tư, Regional CoT cho thấy suy luận theo vùng ảnh có tác động trực tiếp đến hiệu năng. Khi mô hình được hướng dẫn xác định vùng quan trọng trước khi trả lời, F1-score trên VinDr-SpineXR tăng từ 30.16 lên 61.75. Đây là mức cải thiện rất lớn, cho thấy việc mô hình nhìn đúng vùng ảnh có thể giúp cải thiện kết quả phân loại hoặc chẩn đoán.
+
+Tuy nhiên, kết quả cũng cho thấy MedRegA chưa hoàn hảo ở mọi khía cạnh. Trong English VQA, mô hình vẫn thấp hơn một số baseline ở Close Accuracy và Open Recall. Ngoài ra, F1-score trên multi-label classification vẫn còn thấp, chỉ đạt 13.32 trong bảng kết quả tổng hợp. Điều này cho thấy các bài toán nhiều nhãn trong y khoa vẫn rất khó, đặc biệt khi mô hình cần phân biệt nhiều dấu hiệu bệnh lý nhỏ và có thể chồng lấn nhau.
+
+\subsection{Kết luận phần đánh giá hiệu năng}
+
+Nhìn chung, phần thực nghiệm chứng minh rằng MedRegA là một mô hình medical multimodal LLM có hiệu năng mạnh và có khả năng diễn giải tốt hơn các baseline. Trên các tác vụ tổng quát, mô hình cải thiện chất lượng hỏi đáp, sinh báo cáo và phân loại ảnh y khoa. Trên các tác vụ region-centric, MedRegA thể hiện ưu thế rõ rệt trong việc nhận diện vùng ảnh, tìm vùng theo mô tả và tạo báo cáo có căn cứ vùng ảnh.
+
+Điểm quan trọng nhất của MedRegA không chỉ nằm ở việc cải thiện các chỉ số định lượng, mà còn ở việc làm cho kết quả của mô hình trở nên minh bạch hơn. Thay vì chỉ sinh ra câu trả lời hoặc báo cáo chung chung, MedRegA có thể chỉ ra vùng ảnh liên quan đến kết luận. Đây là đặc điểm rất quan trọng trong y khoa, vì bác sĩ và người dùng cần kiểm chứng được mô hình đang dựa vào bằng chứng nào để đưa ra nhận định.
+
+Tóm lại, MedRegA cho thấy một hướng phát triển quan trọng của medical multimodal LLM: mô hình không chỉ cần hiểu toàn bộ ảnh và văn bản, mà còn cần hiểu được từng vùng cụ thể trên ảnh. Khả năng region-aware này giúp mô hình vừa chính xác hơn, vừa dễ giải thích hơn, phù hợp hơn với các yêu cầu nghiêm ngặt trong lĩnh vực y khoa.
+
+%==============================================================================
+%  TÀI LIỆU THAM KHẢO
+%==============================================================================
+\renewcommand{\refname}{Tài liệu tham khảo}
+\addcontentsline{toc}{section}{Tài liệu tham khảo}
+\begin{thebibliography}{99}
+\small
+\bibitem{medrega} L.~Wang, H.~Wang, H.~Yang, J.~Mao, Z.~Yang, J.~Shen, and X.~Li.
+``Interpretable Bilingual Multimodal Large Language Model for Diverse Biomedical Tasks.''
+\textit{ICLR}, 2025. arXiv:2410.18387.
+\bibitem{meddr} S.~He et al. ``MedDr: Diagnosis-guided bootstrapping for large-scale medical
+vision-language learning.'' arXiv:2404.15127, 2024.
+\bibitem{internvl} Z.~Chen et al. ``How far are we to GPT-4V? Closing the gap to commercial
+multimodal models with open-source suites.'' arXiv:2404.16821, 2024.
+\bibitem{internlm} Z.~Cai et al. ``InternLM2 technical report.'' arXiv:2403.17297, 2024.
+\bibitem{mimiccxr} A.~E.~W.~Johnson et al. ``MIMIC-CXR, a de-identified publicly available
+database of chest radiographs with free-text reports.'' \textit{Scientific Data}, 6(1):317, 2019.
+\bibitem{samed2d} J.~Ye et al. ``SA-Med2D-20M dataset: Segment anything in 2D medical imaging
+with 20 million masks.'' arXiv:2311.11969, 2023.
+\bibitem{imagenome} J.~T.~Wu et al. ``Chest ImaGenome dataset for clinical reasoning.''
+arXiv:2108.00316, 2021.
+\bibitem{vindrspinexr} H.~T.~Nguyen et al. ``VinDr-SpineXR: A deep learning framework for spinal
+lesions detection and classification from radiographs.'' \textit{MICCAI}, 2021.
+\end{thebibliography}
+
+\newpage
+
+%==============================================================================
+%  PHỤ LỤC
+%==============================================================================
+\appendix
+
+\section{Phụ lục: Bảng thuật ngữ nhanh}
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{l Y}
+\toprule
+\textbf{Thuật ngữ} & \textbf{Nghĩa ngắn gọn} \\
+\midrule
+MLLM             & Mô hình ngôn ngữ lớn đa phương thức (LLM + "mắt" nhìn ảnh) \\
+Modality         & Loại ảnh chụp: X-quang, CT, MRI, siêu âm, giải phẫu bệnh\ldots \\
+Region-agnostic  & "Mù vùng" -- nhìn cả ảnh như một khối, không biết vùng nào \\
+Region-centric   & "Lấy vùng làm trung tâm" -- mọi phát biểu neo vào một vùng cụ thể \\
+Bounding box     & Hình chữ nhật khoanh vùng, ghi bằng $[x_1,y_1,x_2,y_2]$ \\
+Grounded         & "Neo/gắn" -- mỗi câu mô tả gắn với một vùng bằng chứng \\
+Segmentation/mask& Phân đoạn: dán nhãn cơ quan cho từng pixel $\to$ mặt nạ tô màu \\
+VQA              & Hỏi-đáp dựa trên hình ảnh \\
+CoT              & Chuỗi suy luận: nghĩ nháp trước, kết luận sau \\
+Regional CoT     & CoT bằng vùng: phát hiện vùng trước $\to$ rồi mới suy luận \\
+IoU              & Độ chồng lấn giữa box dự đoán và box thật ($0\to1$) \\
+Interpretability & Tính diễn giải -- khả năng giải thích/kiểm chứng kết quả mô hình \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\end{document}

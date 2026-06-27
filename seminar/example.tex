@@ -1,0 +1,214 @@
+
+\documentclass[12pt,a4paper,oneside]{extarticle}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+
+\usepackage{float}
+\usepackage{adjustbox}
+
+\fontsize{13pt}{15pt}\selectfont
+
+\usepackage[vietnamese]{babel}
+% Font chính: ưu tiên Times New Roman (theo chuẩn báo cáo).
+% Nếu không có, tự động fallback sang TeX Gyre Termes (kèm sẵn TeX Live).
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{TeX Gyre Termes}}
+
+%---- Lề trang & line spacing -----------------------------------------------
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=2cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing                            % cách dòng 1.5 (chuẩn báo cáo)
+
+%---- Toán học --------------------------------------------------------------
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{bm}                            % cho \bm{...} bold math
+\usepackage{mathtools}
+
+%---- Đồ họa, bảng, code ----------------------------------------------------
+\usepackage{graphicx}
+\usepackage{float}                         % buộc figure đứng đúng chỗ với [H]
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{array, tabularx, booktabs, multirow, makecell}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+% Custom column type
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+
+%---- Hyperlink & mục lục ---------------------------------------------------
+\usepackage[colorlinks=true, linkcolor=black, citecolor=blue,
+            urlcolor=blue, bookmarks=true]{hyperref}
+\usepackage{tocloft}                       % tùy biến mục lục
+\renewcommand{\cfttoctitlefont}{\Large\bfseries}
+
+%---- Header / footer -------------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+%---- Tiêu đề mục (override) ------------------------------------------------
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+%---- Cấu hình listings cho code Python -------------------------------------
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.96}
+\lstdefinestyle{pystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    language=Python
+}
+\lstset{style=pystyle}
+
+%---- Lệnh tiện ích ---------------------------------------------------------
+% Theo yêu cầu thầy: chữ thẳng = fact từ paper; chữ nghiêng = nhận xét cá nhân.
+% Dùng lệnh \fact{...} và \remark{...} để phân biệt rõ.
+\newcommand{\fact}[1]{#1}                  % chữ thẳng - fact trích từ paper
+\newcommand{\remark}[1]{\textit{#1}}       % chữ nghiêng - nhận xét cá nhân
+
+% Highlight cho trích dẫn/công thức quan trọng
+\newcommand{\important}[1]{\textbf{#1}}
+
+%==============================================================================
+\begin{document}
+
+%---- TRANG BÌA -------------------------------------------------------------
+\begin{titlepage}
+\begin{center}
+
+{\large\bfseries ĐẠI HỌC QUỐC GIA TP HỒ CHÍ MINH}\\[2pt]
+{\large\bfseries TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}\\[2pt]
+{\large\bfseries KHOA CÔNG NGHỆ THÔNG TIN}\\[0.5cm]
+
+\includegraphics[width=0.3\textwidth]{figures/hcmus-logo.png}\\[0.5cm]
+% \vspace{0cm}
+
+% Logo trường (nếu có)
+% \includegraphics[width=0.25\textwidth]{logo_hcmus.png}\\[1cm]
+
+{\large BÁO CÁO MÔN HỌC SÂU}\\[6pt]
+
+% \vspace{1cm}
+
+{\Large\bfseries Đề tài:}\\[8pt]
+{\LARGE\bfseries Mô Hình Ngôn Ngữ Lớn Đa Phương Thức Song Ngữ Có Thể Diễn Giải cho Các Tác Vụ Y Sinh Đa Dạng}\\[1.2cm]
+{\large\bfseries Dựa trên bài báo:}\\[2pt]
+{\large\itshape ``Interpretable Bilingual Multimodal Large Language Model\\
+for Diverse Biomedical Tasks''}\\[2pt]
+{\large Lehan Wang, Haonan Wang, Honglong Yang, Jiaji Mao,\\
+Zehong Yang, Jun Shen, and Xiaomeng Li}\\[2pt]
+{\normalsize The Thirteenth International Conference on Learning Representations\\
+(ICLR 2025)}\\[1cm]
+
+\begin{flushleft}
+\hspace{2cm}\begin{tabular}{ll}
+\textbf{GIÁO VIÊN HƯỚNG DẪN:}   & TS. Nguyễn Tiến Huy \\
+                                & TS. Lê Thanh Tùng\\[8pt]
+                                
+\textbf{HỌC VIÊN THỰC HIỆN:}  & 25C15029 -- Lê Thị Tường Vy\\
+                              & 25C15008 -- Phạm Ngọc Hiếu\\
+                              & 25C15011 -- Nguyễn Huy Hoàng\\
+                              & 25C11050 -- Nguyễn Đình Lộc\\
+                              & 25C15003 -- Ngô Trương Minh Đạt\\
+\end{tabular}
+\end{flushleft}
+
+\vfill
+{\bfseries TPHCM -- 06/2026}
+
+\end{center}
+\end{titlepage}
+
+%---- MỤC LỤC ---------------------------------------------------------------
+\renewcommand{\contentsname}{MỤC LỤC}
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+% (Tùy chọn) Danh sách hình & bảng
+% \listoffigures
+% \listoftables
+% \newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+
+\newpage
+
+
+% ============ TÓM TẮT ============
+\input{contents/Trong-summary}
+ 
+\newpage
+ 
+% ============ 0. GIỚI THIỆU ============
+
+
+
+% ============ 1. NHỮNG NGHIÊN CỨU GẦN ĐÂY ============
+
+
+
+% ============ 4. KẾT QUẢ THỰC NGHIỆM ============
+\section{Thực nghiệm}
+
+
+%=============== KẾT LUẬN ===============
+
+
+
+%==============================================================================
+%  TÀI LIỆU THAM KHẢO
+%==============================================================================
+% \renewcommand{\refname}{Tài liệu tham khảo}
+%% Numbered bibliography style
+\bibliographystyle{elsarticle-num}
+
+\input{ref.tex}
+
+\newpage
+
+%==============================================================================
+%  PHỤ LỤC
+%==============================================================================
+\appendix
+
+\section{Phụ lục: Code chương trình}
+
+Code chương trình không có, tác giả không công bố công khai.\\
+Link Source code của tác giả: 
+
+\url{https://colab.research.google.com/drive/1Gz0L8AnT4ijrUchrhEXXsnaacrFdenn}
+
+\end{document}

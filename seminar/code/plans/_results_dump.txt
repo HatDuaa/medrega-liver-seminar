@@ -1,0 +1,204 @@
+
+============================================================
+## [6753f1d8] 
+============================================================
+PID kernel HIỆN TẠI (giữ): 550 | PID đang dùng GPU: [550]
+Không có kernel ma nào.
+
+============================================================
+## [gpu] 
+============================================================
+Sat Jun 27 12:03:35 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.82.07              Driver Version: 580.82.07      CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100-SXM4-40GB          Off |   00000000:00:04.0 Off |                    0 |
+| N/A   36C    P0             57W /  400W |     506MiB /  40960MiB |      3%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A             550      C   /usr/bin/python3                        494MiB |
++-----------------------------------------------------------------------------------------+
+CUDA: True
+
+============================================================
+## [pip] 
+============================================================
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m60.7/60.7 MB[0m [31m44.2 MB/s[0m eta [36m0:00:00[0m
+[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.2/3.2 MB[0m [31m117.6 MB/s[0m eta [36m0:00:00[0m
+[?25h
+
+============================================================
+## [imp] 
+============================================================
+WARNING:torchao:Failed to load /usr/local/lib/python3.12/dist-packages/torchao/_C_mxfp8.cpython-310-x86_64-linux-gnu.so: Could not load this library: /usr/local/lib/python3.12/dist-packages/torchao/_C_mxfp8.cpython-310-x86_64-linux-gnu.so
+WARNING:torchao:Failed to load /usr/local/lib/python3.12/dist-packages/torchao/_C_cutlass_90a.abi3.so: Could not load this library: /usr/local/lib/python3.12/dist-packages/torchao/_C_cutlass_90a.abi3.so
+Import xong | CUDA: True
+
+============================================================
+## [mount] 
+============================================================
+Mounted at /content/drive
+Drive đã mount. Lưu data tại: /content/drive/MyDrive/Colab Notebooks/medrega/data
+
+============================================================
+## [getdata] 
+============================================================
+Đã có data_multi -> dùng luôn.
+DATA_DIR = /content/drive/MyDrive/Colab Notebooks/medrega/data_multi_v2/data_liver | jsonl: 1238
+
+============================================================
+## [split] 
+============================================================
+Tổng mẫu: 1238 | dương: 585 | âm: 653
+Split (theo bệnh nhân): {'train': 746, 'cal': 235, 'test': 257}
+Bệnh nhân: {'train': 78, 'cal': 26, 'test': 27} -> không trùng (OK)
+
+============================================================
+## [-ZYQq8xYEkuD] 
+============================================================
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/2076 [00:00<?, ?it/s]Đã load model đã fine-tune: /content/drive/MyDrive/Colab Notebooks/medrega/model/checkpoints/gemma4_final | VRAM: 15.9 GB
+
+============================================================
+## [load] 
+============================================================
+processor_config.json:   0%|          | 0.00/1.69k [00:00<?, ?B/s]chat_template.jinja:   0%|          | 0.00/17.3k [00:00<?, ?B/s]config.json:   0%|          | 0.00/5.14k [00:00<?, ?B/s]tokenizer_config.json:   0%|          | 0.00/2.10k [00:00<?, ?B/s]tokenizer.json:   0%|          | 0.00/32.2M [00:00<?, ?B/s]model.safetensors:   0%|          | 0.00/16.0G [00:00<?, ?B/s]Loading weights:   0%|          | 0/2076 [00:00<?, ?it/s]generation_config.json:   0%|          | 0.00/208 [00:00<?, ?B/s]Đã tải model BF16: google/gemma-4-E4B-it | VRAM: 15.9 GB
+
+============================================================
+## [fmt] 
+============================================================
+Format + AUGMENT (train) sẵn sàng. AUGMENT = True
+
+============================================================
+## [util] 
+============================================================
+parse_box + iou OK (đã test xywh + <box> + ca âm)
+
+============================================================
+## [j8bfJwu9rw_s] 
+============================================================
+?KHÁC      Gemma4ClippableLinear    | ví dụ: model.audio_tower.layers.0.feed_forward1.ffw_layer_1
+?KHÁC      Linear                   | ví dụ: model.audio_tower.subsample_conv_projection.input_proj_linear
+LLM        Linear                   | ví dụ: model.language_model.layers.0.self_attn.q_proj
+VISION     Gemma4ClippableLinear    | ví dụ: model.vision_tower.encoder.layers.0.self_attn.q_proj
+VISION     Linear                   | ví dụ: model.vision_tower.patch_embedder.input_proj
+
+============================================================
+## [train] TRAIN
+============================================================
+[transformers] warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.
+Full-FT vision: 169.3M | audio đóng băng
+trainable params: 239,093,760 || all params: 8,010,863,904 || trainable%: 2.9846
+LoRA-LLM 69.8M @0.0002 | vision 169.3M @1e-05
+train: 746 (augment) | val(cal): 235 (không augment)
+<IPython.core.display.HTML object>  >> BEST mới (eval_loss=0.3356)
+  >> BEST mới (eval_loss=0.2890)
+  >> BEST mới (eval_loss=0.2683)
+  >> BEST mới (eval_loss=0.2540)
+  >> BEST mới (eval_loss=0.2507)
+Đã nạp BEST theo val | unexpected=0 (phải=0; missing lớn là BT vì BEST chỉ chứa param train)
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]XONG. Lưu FULL: /content/drive/MyDrive/Colab Notebooks/medrega/model/checkpoints/gemma4_v2
+
+============================================================
+## [diag] DIAG sau train
+============================================================
+============================================================
+GT box : [373, 191, 404, 218] | label: tumor
+MODEL nói: '<ref>liver tumor</ref><box>[[375, 185, 412, 221]]</box>'
+Parsed : [375, 185, 412, 221]
+============================================================
+GT box : [355, 171, 421, 240] | label: tumor
+MODEL nói: '<ref>liver tumor</ref><box>[[351, 171, 421, 241]]</box>'
+Parsed : [351, 171, 421, 241]
+============================================================
+GT box : [355, 173, 427, 248] | label: tumor
+MODEL nói: '<ref>liver tumor</ref><box>[[342, 165, 431, 243]]</box>'
+Parsed : [342, 165, 431, 243]
+============================================================
+GT box : [355, 173, 427, 248] | label: tumor
+MODEL nói: '<ref>liver tumor</ref><box>[[343, 165, 431, 247]]</box>'
+Parsed : [343, 165, 431, 247]
+============================================================
+GT box : [558, 115, 580, 132] | label: tumor
+MODEL nói: '<ref>liver tumor</ref><box>[[555, 109, 581, 135]]</box>'
+Parsed : [555, 109, 581, 135]
+
+============================================================
+## [viz_after] VIZ
+============================================================
+[0] pid=77 | tumor | GT=[625, 693, 664, 734] | box=None
+[1] pid=7 | tumor | GT=[373, 191, 404, 218] | box=[375, 185, 412, 221]
+[2] pid=121 | tumor | GT=[380, 294, 417, 326] | box=None
+[3] pid=121 | none  | GT=None | box=None
+[4] pid=104 | none  | GT=None | box=None
+[5] pid=76 | none  | GT=None | box=None
+<Figure size 1300x900 with 6 Axes>
+
+============================================================
+## [sec8] 
+============================================================
+predict_box + conf_logprob/spatial/self OK | mode: REAL
+
+============================================================
+## [sec9] EVAL1 predict
+============================================================
+Predict nhẹ (box+logprob):   0%|          | 0/257 [00:00<?, ?it/s][transformers] The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+Predict nhẹ (box+logprob): 100%|██████████| 257/257 [09:18<00:00,  2.17s/it]Xong nhẹ: 257 mẫu | 122 dương
+
+============================================================
+## [1JZwDbmBDdnw] EVAL2 IoU per-slice+per-patient
+============================================================
+[per-slice] 122 lát | IoU TB 0.301 | max 0.975
+   @IoU>=0.1: 49%
+   @IoU>=0.25: 44%
+   @IoU>=0.5: 34%
+
+[PER-PATIENT] 25 bệnh nhân dương | IoU TB 0.294
+   bệnh nhân IoU-TB >= 0.1: 68%
+   bệnh nhân IoU-TB >= 0.25: 44%
+   bệnh nhân IoU-TB >= 0.5: 24%
+
+ÂM: 135 lát | im đúng 132 | BỊA u (FP) 3 (2%)
+
+logprob (per-patient): Spearman -0.865
+
+============================================================
+## [ev_metric] METRIC cong bang
+============================================================
+=== Điểm công bằng (0-1, cao=tốt): 0.446 ===
+DƯƠNG 122 ca | chịu vẽ box (detect recall): 62% | định vị @IoU>=0.25: 44% | sót (no box): 46
+ÂM 135 ca | im đúng: 132 | BỊA u (FP): 3 (2%)
+(Điểm thấp + recall thấp = model lười nói no-tumor; điểm cao = phát hiện+định vị tốt)
+
+============================================================
+## [sec10] EVAL3 spatial
+============================================================
+Spatial+self TEST (6 lần/ảnh): 100%|██████████| 257/257 [35:55<00:00,  8.39s/it]
+CAL spatial (calibrate): 100%|██████████| 60/60 [13:17<00:00, 13.29s/it]Xong nặng | test có spatial/selfconf | cal_rows: 60
+
+============================================================
+## [sec11] EVAL4 gate/risk/conformal
+============================================================
+PER-PATIENT | 25 bệnh nhân dương
+Tín hiệu    Spearman  AUROC@.25
+logprob       -0.865      0.013
+spatial       +0.924      0.974
+selfconf      +0.860      0.974
+=> BEST: spatial
+<Figure size 600x400 with 1 Axes>Coverage 100%: selIoU = 0.294
+Coverage 75%: selIoU = 0.396
+Coverage 50%: selIoU = 0.517
+Coverage 25%: selIoU = 0.664
+
+Ngưỡng conformal: 0.160
+Bệnh nhân trả lời: 17 | im: 8 | sai: 11 | selIoU: 0.408 | Cost: 0.88

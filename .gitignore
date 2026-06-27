@@ -1,0 +1,38 @@
+# === Môi trường ===
+.venv/
+**/__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# === BÍ MẬT — KHÔNG BAO GIỜ commit ===
+**/secrets.env
+*.env
+*token*
+
+# === Data nặng (LiTS + ảnh + zip) ===
+seminar/code/data/
+*.zip
+*.nii
+*.nii.gz
+*.png
+*.jpg
+
+# === Code tác giả (clone riêng, có thể clone lại) ===
+seminar/code_tac_gia/
+
+# === Model / checkpoint (trên Drive) ===
+**/checkpoints/
+*.safetensors
+*.bin
+*.pt
+
+# === PDF / nhị phân nặng ===
+*.pdf
+
+# === Log / temp ===
+*.log
+**/_*.png
+seminar_eval_cells.txt
+
+# === Coursework khác (không thuộc seminar) ===
+bt1/
