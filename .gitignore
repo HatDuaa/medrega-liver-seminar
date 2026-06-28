@@ -36,3 +36,7 @@ seminar_eval_cells.txt
 
 # === Coursework khác (không thuộc seminar) ===
 bt1/
+
+# Chart sinh ra + JSON tải về (giữ local, không commit)
+seminar/code/scripts/*.png
+seminar/code/scripts/eval_pred_*.json
