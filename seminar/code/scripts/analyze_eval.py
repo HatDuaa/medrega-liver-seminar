@@ -1,7 +1,8 @@
 """Phân tích file eval_pred_*.json (xuất từ notebook) — CHẠY LOCAL, KHÔNG cần GPU/model.
 
 Input JSON: {"run":..., "test":[...], "cal":[...]}, mỗi phần tử:
-  {pid, is_pos, pred_boxes:[[x1,y1,x2,y2],...], gt_boxes:[...], logprob, spatial, selfconf, ...}
+  {pid, is_pos, pred_boxes:[[x1,y1,x2,y2],...], gt_boxes:[...], logprob, gens:[{boxes,logprob}×N], ...}
+  (gens = N lần đoán raw; spatial tính SAU từ gens. JSON cũ có sẵn 'spatial'/'selfconf' vẫn đọc được.)
 
 Usage:
   python analyze_eval.py <path_to_json>
@@ -21,7 +22,7 @@ try:
 except ImportError as e:
     print("Thiếu thư viện:", e); sys.exit(1)
 
-SIGNALS = ["logprob", "spatial", "selfconf"]
+SIGNALS = ["logprob", "logprob_all", "spatial"]   # logprob (chỉ chữ số) vs logprob_all (mọi token) -> DEBUG
 THRS = [0.1, 0.25, 0.5, 0.75]
 IOU_CORRECT = 0.5
 
@@ -72,10 +73,35 @@ def per_patient(rows):
 
 
 # ---------------- analyses ----------------
+def _spatial_from_gens(gens):
+    """Nhất quán không gian = TB set-IoU từng cặp lần đoán (rỗng-rỗng = 0)."""
+    sets = [g.get("boxes", []) for g in gens]
+    pair = []
+    for i in range(len(sets)):
+        for j in range(i + 1, len(sets)):
+            mi, na, nb = match_boxes(sets[i], sets[j])
+            pair.append(float(np.sum(mi) / max(na, nb)) if mi else 0.0)
+    return float(np.mean(pair)) if pair else 0.0
+
+
+def _lp_from_tokens(toks, digits_only=True):
+    lps = [t["lp"] for t in toks if ((str(t["tok"]).strip().isdigit()) if digits_only else True)]
+    return float(np.mean(lps)) if lps else -10.0
+
+
 def prep(rows):
     for r in rows:
         r["matched"] = match_boxes(r["pred_boxes"], r["gt_boxes"])[0]
         r["miou"] = float(np.mean(r["matched"])) if r["matched"] else 0.0
+        # TÍNH SAU từ raw gens (JSON cũ không có gens -> fallback số đã lưu)
+        g0 = (r.get("gens") or [{}])[0]
+        toks = g0.get("tokens")
+        if toks is not None:
+            r["logprob"] = _lp_from_tokens(toks, True)        # chỉ token chữ số (toạ độ)
+            r["logprob_all"] = _lp_from_tokens(toks, False)   # MỌI token (bản cũ nghi bug)
+        else:
+            r["logprob_all"] = r.get("logprob", -10.0)
+        r["spatial"] = _spatial_from_gens(r["gens"]) if r.get("gens") else r.get("spatial", 0.0)
     return rows
 
 

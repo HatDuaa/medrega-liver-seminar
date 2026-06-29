@@ -214,3 +214,64 @@
 **Local test PASS:** slice_to_boxes, parse_boxes/match_boxes (Hungarian đúng cả sai thứ tự), ANALYZE logic, JSON save (tên duy nhất + reload).
 
 **USER cần:** upload `data_liver_multi_v3.zip` lên Drive → chạy notebook 1 lần (train gemma4_v3 + eval). JSON tự lưu Drive tên riêng mỗi lần.
+
+---
+
+## 2026-06-29 — COOK: sửa RECALL (model lười detect) qua BCE-head + chọn checkpoint (RUN_NAME=gemma4_v4)
+
+**Gốc:** model định vị TỐT khi vẽ (IoU 0.62, FP 1%) nhưng LƯỜI detect (recall 54%, 49/120 lát dương xuất 0 box). Đo lại: lười tập trung ở **lát 1-ổ u nhỏ** (45/85 = 53% sót hẳn); lát nhiều ổ KHÔNG under-count (n_pred 3.37 ≈ n_gt 3.46). → vấn đề = quyết định detect-vs-No trên u nhỏ đơn lẻ, KHÔNG phải đếm box.
+
+**3 căn nguyên:** (1) token quyết định `<ref>`vs`No` pha loãng trong CE-trung-bình; (2) exposure bias; (3) best-by-eval_loss = chọn model nhát nhất.
+
+**Đã implement (medrega_finetune.ipynb):**
+- `cfg`: RUN_NAME=**gemma4_v4**; núm loss W_POS=1.5/W_NEG=1.0, **LAMBDA_BCE=2.0** (núm DUY NHẤT), BCE_POS_W=1.5.
+- `fmt`: thêm `_detect_pos` (vị trí token đầu đáp án) vào example.
+- `train`: **WeightedTrainer + BCE-head** — `loss = w*CE + λ*coef*BCE(detect_decision)`; off-by-one `logits[0, dp-1]`; `diff = logit[DETECT]-logit[NO]`; **guard if model.training** (eval_loss sạch). Derive DETECT/NO token + **IN KIỂM 20 mẫu + assert**. Lưu **MỌI epoch** (`epochK_trainable.pt`) + best-by-loss (mặc định). Cảnh báo sớm: **detect-rate trên ca âm** mỗi epoch.
+- `selck` (MỚI, tùy chọn, RUN_SELECT): chạy TRƯỚC merge trên PeftModel; val **random theo BỆNH NHÂN** (18 bn) từ cal; infer box-only từng epoch → bảng detR/recall/prec/FP/mIoU/Fβ → chọn **Fβ(β=1.5)+guardrail FP≤4% & mIoU≥0.58**.
+- `mergesave` (MỚI): merge_and_unload + save SAU selck. → predict (sec9) chạy sau.
+
+**2 BUG CHẶN đã sửa (review):** off-by-one logit index (dp-1); merge-order (selck trước merge, key .pt khớp PeftModel).
+
+**Test local PASS:** off-by-one đúng; BCE gradient đúng chiều (dương→detect, âm→No); bất đối xứng recall-leaning (phạt sót > phạt bịa); Fβ+guardrail loại đúng ckpt FP-bùng, thắng ckpt lười. Syntax 0 lỗi.
+
+**Review subagent (FIX-FIRST→đã xử):** thêm assert key gt_boxes + `next(...,None)` (fail rõ ràng); `try/finally` cho _neg_detect_rate. (#1 gt_boxes moot: prep_v3 line52 ghi đúng key, v3 cũ đã chạy được.) VRAM logits OK vì A100 dư.
+
+**USER cần:** chạy notebook 1 lần (Run-All) → train gemma4_v4 → selck chọn ckpt → eval. So với gemma4_v3 (before BCE) xem recall lên / FP có giữ ≤4%.
+
+---
+
+## 2026-06-29 (tối) — Sửa thêm sau REVIEW + đổi PREDICT sang "raw-first"
+
+**Review agent tìm 6 lỗi (đều ở cell SAU train, KHÔNG phải train) — đã vá hết:**
+1. `mergesave`: merge lỗi vẫn save -> mất vision. Sửa: **fail-hard** (lỗi thì dừng).
+2. `sec9` `CAL_LIMIT=60` chỉ phủ 13/21 bệnh nhân dương cal. Sửa: **None** (hết 103 lát).
+3. `conf_spatial` rỗng-rỗng = 1.0 (thưởng sót-nhất-quán sai). Sửa: **-> 0.0**.
+4. metrics FP per-slice -> thêm **FP per-patient + CI bootstrap**.
+5. mean-IoU lạc quan -> relabel "IoU(cặp ghép)" + thêm **IoU(phạt thiếu box)**.
+6. `selck` chọn checkpoint chỉ 18/26 bệnh nhân -> **dùng HẾT 26 cal**.
+
+**ĐỔI PREDICT sang raw-first (user yêu cầu):**
+- Mỗi ảnh đoán **N_PRED=3 lần** (was 7 gens): lần 1 GREEDY = đáp án chính (box + logprob); lần 2-3 SAMPLED.
+- JSON lưu **RAW cả 3 lần** (`gens:[{boxes,logprob}]`). Metrics tính SAU từ JSON.
+- `spatial` **tính sau** từ 3 box (sec11/analyze_eval có `_spatial_from_gens`). `selfconf` (hỏi 0-100 riêng) **BỎ** -> còn 2 tín hiệu logprob+spatial.
+- Lợi: predict nhanh ~57%; đổi công thức spatial sau này khỏi re-predict; nhất quán quy ước.
+- Backward-compat: JSON cũ (không gens) vẫn đọc (lấy spatial/selfconf cũ).
+
+**Test local PASS:** spatial-from-gens (3 giống=1.0, 3 rỗng=0.0, lệch nhẹ=0.83); notebook syntax 0 lỗi; analyze_eval.py syntax OK.
+
+**LƯU Ý:** mọi sửa hôm nay KHÔNG ảnh hưởng phiên train đang chạy (Colab không tự sync file đĩa). Áp dụng khi tải notebook mới lên + chạy lại phần eval (không train lại).
+
+---
+
+## 2026-06-29 (tối, tiếp) — INFER dump RAW đầy đủ, metrics tính SAU trên JSON (dễ debug)
+
+**Nguyên tắc:** infer lưu TẤT CẢ raw, mọi số tính lại từ JSON (debug + đổi công thức khỏi re-predict).
+- `gen_raw(rec, temp)` (sec8, real+mock): trả {text, boxes, tokens:[{tok,lp}×mọi token]}.
+- `sec9 _predict_row`: mỗi ảnh N_PRED=3 lần gen_raw -> JSON lưu `gens` = text + TỪNG token kèm logprob + box. (top-level pred_boxes/logprob chỉ để tiện cell METRICS).
+- `sec11` + `analyze_eval.py`: tính SAU từ gens: `logprob` (chỉ token chữ số), `logprob_all` (mọi token), `spatial`. SIGNALS = [logprob, logprob_all, spatial].
+
+**Lý do thêm logprob_all:** user nghi cú lật dấu Spearman −0.865→+0.96 (bỏ token khuôn mẫu) không hợp lý nếu khuôn mẫu thật ≈0. → Giờ lưu raw token-level + tính CẢ HAI biến thể → bảng Spearman sec11 sẽ cho thấy số THẬT trên v4, kết luận bằng dữ liệu thay vì tin lời kể. (Test local: token mẫu -> digit-only −0.867 vs all −0.375, đúng hướng "all bị kéo về 0".)
+
+**selfconf:** chốt BỎ hẳn (tín hiệu yếu nhất; verbalized cần prompt khác hoặc nhãn không có; logprob/spatial mạnh + miễn phí từ cùng 3 lần đoán).
+
+**Backward-compat:** JSON cũ (không gens) vẫn đọc (fallback số đã lưu). Test PASS, syntax sạch cả notebook + script.
