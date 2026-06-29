@@ -105,10 +105,30 @@ def prep(rows):
     return rows
 
 
+def detect_report(rows, level="slice"):
+    """NHẬN BIẾT có/không u (nhị phân: VẼ BOX hay KHÔNG) — TÁCH khỏi IoU."""
+    from collections import defaultdict
+    if level == "patient":
+        bp = defaultdict(lambda: [0, 0])
+        for r in rows:
+            bp[r["pid"]][0] |= int(bool(r["gt_boxes"])); bp[r["pid"]][1] |= int(len(r["pred_boxes"]) > 0)
+        items = list(bp.values())
+    else:
+        items = [[int(bool(r["gt_boxes"])), int(len(r["pred_boxes"]) > 0)] for r in rows]
+    TP = sum(g and p for g, p in items); FP = sum((not g) and p for g, p in items)
+    TN = sum((not g) and not p for g, p in items); FN = sum(g and not p for g, p in items); n = len(items)
+    sens = TP/(TP+FN) if TP+FN else 0; spec = TN/(TN+FP) if TN+FP else 0
+    prec = TP/(TP+FP) if TP+FP else 0; f1 = 2*prec*sens/(prec+sens) if prec+sens else 0
+    print(f"  [{level}] n={n} TP={TP} FP={FP} TN={TN} FN={FN} | "
+          f"Sens(bắt u) {sens:.0%} | Spec(loại sạch) {spec:.0%} | Prec {prec:.0%} | F1 {f1:.2f}")
+
+
 def metrics(rows):
     pos = [r for r in rows if r["is_pos"]]
     neg = [r for r in rows if not r["is_pos"]]
     print("\n" + "=" * 60 + "\n## METRICS (Hungarian multi-box)\n" + "=" * 60)
+    print("[NHẬN BIẾT có/không u] — chỉ xét VẼ BOX hay KHÔNG, ĐỘC LẬP IoU:")
+    detect_report(rows, "slice"); detect_report(rows, "patient")
     print(f"[per-slice DƯƠNG] {len(pos)} lát | mean matched-IoU {np.mean([r['miou'] for r in pos]):.3f}")
     for th in THRS:
         tp = sum(sum(v > th for v in r["matched"]) for r in pos)
