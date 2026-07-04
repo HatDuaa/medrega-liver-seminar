@@ -27,10 +27,10 @@ GREEN  = RGBColor(0x2E,0x7D,0x32)
 TFONT, BFONT = "Cambria", "Calibri"
 SW, SH = 10.0, 5.625
 
-prs = Presentation()
-prs.slide_width  = Inches(SW)
-prs.slide_height = Inches(SH)
-BLANK = prs.slide_layouts[6]
+SRC_DECK = r"C:/Users/loocn/Downloads/MedRegA_slide.pptx"   # deck paper gốc (12 slide)
+prs = Presentation(SRC_DECK)                                # mở gốc → kế thừa master/theme/font
+BLANK = prs.slide_layouts[0]                                # layout 'DEFAULT' rỗng của deck gốc
+# slide của mình sẽ được APPEND sau 12 slide paper -> 1 deck chung
 
 def _set(run, size, color, bold=False, italic=False, font=BFONT):
     run.font.size = Pt(size); run.font.bold = bold; run.font.italic = italic
@@ -79,7 +79,8 @@ def header(slide, title, subtitle=None):
         r = p2.add_run(); r.text = subtitle; _set(r, 11, SUBTXT, italic=True)
     return h + 0.12
 
-def footer(slide, page):
+def footer(slide, page=None):
+    page = len(prs.slides._sldIdLst)   # số trang THẬT theo vị trí trong deck chung
     rect(slide, 0, 5.34, SW, 0.29, FOOTBG)
     tb, tf = textbox(slide, 0.35, 5.40, 6.5, 0.18)
     r = tf.paragraphs[0].add_run(); r.text = "Cải tiến MedRegA · Gemma 4 E4B (u gan LiTS) · Seminar Học sâu"
@@ -403,6 +404,6 @@ notebox(s, "Câu chốt", "Chúng em không hứa đã tới đích — chỉ ra
 footer(s, 17)
 notes(s, "Câu chốt: Chúng em không claim đánh bại MedRegA về quy mô hay SOTA. Đóng góp chính là biến một benchmark định vị vùng thành workflow đánh giá gần lâm sàng hơn, và trung thực về giới hạn.")
 
-out = "seminar/cai_tien/slides_cai_tien_2026-07-05.pptx"
+out = "seminar/cai_tien/seminar_full_2026-07-05.pptx"
 prs.save(out)
 print("SAVED", out, "| n_slides =", len(prs.slides._sldIdLst))
