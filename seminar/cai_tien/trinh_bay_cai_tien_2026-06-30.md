@@ -150,16 +150,21 @@
 
 ## Slide 13 — Fine-tune KHÔNG làm "quên": vẫn là trợ lý y khoa tổng quát
 
-- **Lo ngại:** fine-tune hẹp (chỉ dạy box u gan) có làm model mất khả năng nói chuyện / hỏi-đáp không? → **đã kiểm bằng hội thoại đa lượt**: lượt 1 = prompt DETECT (như train), các lượt sau = bác sĩ hỏi tự do; lưu JSON làm bằng chứng.
-- **Kết quả: KHÔNG quên** — ví dụ 1 ca dương:
-  - *Lượt 1 (prompt detect):* `<ref>liver tumor</ref><box>[[369,185,405,221]]</box>` → vẽ đúng box.
-  - *Lượt 2 ("u đáng lo không?"):* trả lời đầy đủ — từ chối chẩn đoán, liệt kê yếu tố cần xét (kích thước, tỉ trọng, bệnh sử), khuyên đi khám.
-  - *Lượt 4 ("còn cơ quan nào?"):* mô tả ruột, mạch máu (động mạch chủ), cột sống, thận → **vision vẫn hiểu ảnh tổng quát**.
-  - *Lượt 5 ("khuyên gì tiếp?"):* tư vấn có cấu trúc (tái khám chuyên gia, CT/MRI cản quang, siêu âm...).
-  - *Lượt 6 ("thủ đô VN?"):* "**Hanoi**" → **kiến thức chung còn nguyên**.
-  - *Ca ÂM:* lượt 1 "No liver tumor" → lượt 2 "vì không có u nên không đánh giá được" → **nhớ ngữ cảnh đa lượt**.
+- **Lo ngại:** fine-tune hẹp (chỉ dạy khoanh box u gan) có làm model mất khả năng nói chuyện / theo lệnh không? → **kiểm bằng hội thoại đa lượt**: lượt 1 = prompt DETECT (như train), các lượt sau = yêu cầu tự do; lưu JSON làm bằng chứng.
+- **Bằng chứng — 1 ca đa ổ (model VỪA khoanh u VỪA trả lời):**
+
+| Lượt | Yêu cầu | Model trả lời |
+|---|---|---|
+| 1 | prompt DETECT (như train) | `<ref>liver tumor</ref><box>[[438,211,469,241], ...]</box>` → vẽ nhiều box |
+| 2 | *2 câu, không chẩn đoán* | "Several small, scattered lesions are visible throughout the liver tissue. These masses appear in various locations." (đúng 2 câu) |
+| 4 | *tiếng Việt cho bệnh nhân, ≤60 từ* | "Bức ảnh này chỉ là một lát cắt nhỏ của gan. Chúng tôi thấy có một vài điểm bất thường nhỏ trên gan. Để kết luận chính xác, bác sĩ cần xem thêm nhiều ảnh khác..." |
+| 5 | *JSON đúng 3 key, không thừa chữ* | `{"lesion_seen": "Yes", "confidence_caveat": "Single slice limitation...", "next_step": "Review full scan and patient history."}` |
+| 7 | *thơ 2 câu tiếng Việt về mưa* | "Mưa rơi tí tách trên mái hiên, / Gột rửa phố phường, lòng thêm dịu êm." |
+| 8 | *17 × 23 = ? (chỉ số)* | **391** ✓ |
+
+- **Nhất quán đa lượt:** ca CÓ u → JSON `"lesion_seen": "Yes"` + "several lesions"; ca sót/âm → "No liver tumor". Model **phản ánh đúng kết quả nó vừa detect ở lượt 1**.
 - **Vì sao giữ được:** dùng **LoRA** (giữ nguyên trọng số gốc, chỉ cộng delta nhỏ). Task detection **kích hoạt bởi prompt riêng**; câu hỏi khác → model dùng lại năng lực Gemma gốc → **thêm kỹ năng mà không mất trí nhớ**.
-- *Câu nói khi trình bày:* "Lo ngại tự nhiên: fine-tune hẹp có làm model 'ngu' đi việc khác không? Chúng em test đối thoại — model vừa khoanh được u, vừa mô tả ảnh, tư vấn, trả lời cả câu ngoài lề (Hà Nội). Nhờ LoRA, nó thêm kỹ năng mà không quên. Đây là điểm cộng ngoài dự kiến."
+- *Câu nói khi trình bày:* "Lo ngại tự nhiên: fine-tune hẹp có làm model 'ngu' đi việc khác không? Model vừa khoanh được u, vừa theo lệnh chính xác (JSON đúng key, đếm câu), giải thích song ngữ cho bệnh nhân, làm thơ, và tính 17×23=391. Nhờ LoRA — thêm kỹ năng mà không quên. Đây là điểm cộng ngoài dự kiến."
 
 ---
 
