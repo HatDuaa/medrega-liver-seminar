@@ -214,7 +214,7 @@ bullets(s, [
   ("**3 task region-centric:** Region→Text · **Text→Region (đồ án làm task này)** · Grounded Report.", 0),
   ("Loss = **cross-entropy ngôn ngữ thuần** (không có loss hình học cho box); ảnh 3D chỉ lấy **1 lát trung tâm**; **16× H800, vài ngày**.", 0),
 ], 0.4, bt, 9.2, 2.2)
-image(s, "seminar/code/fig4_tasks.png", 1.15, 3.95, w=7.7,
+image(s, "seminar/code/fig4_tasks.png", 1.35, 3.55, w=7.3,
       caption="3 task region-centric: Region→Text · Text→Region · Grounded Report (Fig.4)")
 footer(s, 4)
 notes(s, "Câu nói: Hai giai đoạn — đầu tiên dạy 'cầu' nối ảnh–chữ, sau đó dạy 'não' làm việc theo lệnh. Box chỉ là chữ nên vẫn dùng loss ngôn ngữ bình thường.")
@@ -258,8 +258,7 @@ bullets(s, [
   ("⚠️ 1 cặp cấu hình minh hoạ, **chưa lặp seed** — chỉ cho thấy HƯỚNG.", 1),
   ("⚠️ KHÔNG nói “Gemma giỏi hơn MedRegA” — phải fine-tune y khoa mới cạnh tranh.", 1),
 ], 0.4, bt+2.05, 5.5, 1.6, base=11)
-image(s, "seminar/code/iou_frozen_vs_unfrozen.png", 6.2, bt+0.1, w=3.5,
-      caption="pIoU: đóng băng vs mở khoá vision")
+image(s, "seminar/code/iou_frozen_vs_unfrozen.png", 6.2, bt+0.25, w=3.6)
 footer(s, 7)
 notes(s, "Câu nói: Đóng góp đầu tiên là chứng minh khả thi — tái tạo năng lực khoanh vùng trên mô hình nhỏ hơn nhiều, chỉ 1 GPU. Triết lý: đổi 'rộng' (8 modality) lấy 'sâu' (1 task).")
 
@@ -375,7 +374,7 @@ table(s, ["#", "Hạn chế (nguồn)", "Hướng đi tiếp", "Chi phí"], [
   ["①", "Sót u isointense [ĐO ĐƯỢC]", "Multi-window (cửa sổ gan hẹp)", "🟢 rất thấp"],
   ["②", "3D→2D mất thông tin [GIẢ ĐỊNH]", "2.5D stack (z−1/z/z+1 vào RGB)", "🟢 thấp"],
   ["③", "LiTS đơn pha [GIẢ ĐỊNH]", "CT đa pha — trần của DỮ LIỆU", "🔴 cần data"],
-  ["⑤", "2 ca âm, 1 dataset [ĐO ĐƯỢC]", "External validation + FROC + calibration", "🟡 inference"],
+  ["⑤", "2 ca âm, 1 dataset [ĐO ĐƯỢC]", "External validation + FROC + calibration", "🟡 vừa"],
 ], 0.4, bt+0.15, 9.2, colw=[0.4,3.4,3.9,1.5], fs=10, hfs=10, rh=0.52)
 footer(s, 15)
 notes(s, "Câu nói: Mạch 1 — làm ảnh giàu hơn (multi-window, 2.5D, đa pha) và kết quả đáng tin hơn (external validation, thêm ca âm). ①⑤ nối thẳng số Kết quả; ②③ suy từ thiết kế nên ghi rõ CHƯA đo.\n\nExternal validation = kiểm trên bộ CT khác (IRCADb/MSD). FROC = đường cong phát hiện đa tổn thương. calibration = hiệu chỉnh độ tự tin.")
