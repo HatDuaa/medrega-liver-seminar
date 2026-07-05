@@ -205,9 +205,9 @@ SCRIPT (~40s): "Our model reaches F1 0.89 on detection, 80% sensitivity (20/25 p
       (T("**Tăng dữ liệu huấn luyện:** dữ liệu hiện còn ít nên n khi đánh giá chưa đủ lớn để tin cậy → thêm dữ liệu + **external validation** + **calibration**.",
          "**More training data:** current data is limited so evaluation n is too small to trust → more data + **external validation** + **calibration**."),0),
     ],0.4,bt+0.15,9.2,3.0,base=13,gap=11)
-    notebox(s,T("Tổng kết","Closing"),
-      T("Không hứa đã tới đích — công trình chỉ ra con đường và những chỗ còn dốc.",
-        "We don't claim to have arrived — we map the road and where it's still steep."),0.4,bt+3.05,9.2,0.6,kind="info")
+    notebox(s,T("Tổng kết","Summary"),
+      T("Nghiên cứu chứng minh tính khả thi của hướng region-centric ở quy mô nhỏ (proof-of-concept); các hướng phát triển trên nhằm khắc phục hạn chế hiện tại và tiến tới ứng dụng thực tế.",
+        "This work demonstrates the feasibility of a region-centric approach at small scale (proof-of-concept); the directions above aim to address current limitations and move toward practical application."),0.4,bt+3.0,9.2,0.78,kind="info")
     footer(s,5)
 
     out=f"seminar/cai_tien/slides_5min_{'EN' if EN else 'VN'}.pptx"
