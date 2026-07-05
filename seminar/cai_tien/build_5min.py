@@ -145,8 +145,8 @@ def build(LANG):
       (T("Định vị: cùng chuẩn (matched) mình **~0.32** vs MedRegA **~0.23**; pIoU CÓ PHẠT của mình 0.27 còn khắt khe hơn — đích họ lớn + box lỏng, khác dataset.",
          "Localization ~0.27 ≈ **same ballpark as MedRegA (~0.23)** despite 5× smaller — different dataset, reference only."),0),
     ],0.4,cy+1.52,9.2,1.5,base=12.5,gap=8)
-    notebox(s,T("⚠ Lưu ý","⚠ Note"),T("n nhỏ (~25 bn dương / 2 âm) → CI rộng; đây là PoC, không tuyên bố lâm sàng.",
-              "small n (~25 pos patients / 2 neg) → wide CI; a PoC, no clinical claim."),0.4,cy+3.0,9.2,0.6,kind="caveat")
+    notebox(s,T("⚠ Lưu ý","⚠ Note"),T("Cỡ mẫu còn nhỏ — khoảng 25 bệnh nhân có u và 2 không u — nên các con số còn dao động; đây là nghiên cứu bước đầu (proof-of-concept), chưa phải hệ thống lâm sàng.",
+              "The test set is small — about 25 tumor patients and 2 without — so the numbers still vary; this is a proof-of-concept, not a clinical system."),0.4,cy+2.9,9.2,0.72,kind="caveat")
     notes(s,T(
 """GIẢI THÍCH METRIC (Presenter View):
 • Detection F1 0.89 = cân bằng recall (bắt u) & precision (không báo bừa); tính PER-PATIENT để không thổi phồng.
