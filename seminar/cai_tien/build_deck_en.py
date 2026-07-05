@@ -21,7 +21,7 @@ fig,ax=plt.subplots(figsize=(7.2,4.2),dpi=150)
 labels=["Detection F1\n(patient)","Sensitivity\n(catch tumor)","False-positive\n(neg. slice)"]
 zs=[0.33,0.20,0.022]; ft=[0.89,0.80,0.015]; x=np.arange(3); w=0.36
 b1=ax.bar(x-w/2,zs,w,label="Zero-shot (untrained)",color=GREY_H)
-b2=ax.bar(x+w/2,ft,w,label="After fine-tune (v3)",color=NAVY_H)
+b2=ax.bar(x+w/2,ft,w,label="After fine-tune (ours)",color=NAVY_H)
 for b,v in zip(b1,zs): ax.text(b.get_x()+b.get_width()/2,v+0.015,f"{v:.2f}" if v>=0.1 else f"{v*100:.1f}%",ha="center",fontsize=9,color="#444")
 for b,v in zip(b2,ft): ax.text(b.get_x()+b.get_width()/2,v+0.015,f"{v:.2f}" if v>=0.1 else f"{v*100:.1f}%",ha="center",fontsize=9,fontweight="bold",color=NAVY_H)
 ax.set_ylim(0,1.0); ax.set_ylabel("Value (0–1)")
@@ -243,22 +243,22 @@ bullets(s,[("**Multi-slice** (vs paper's 1 slice): per patient, 2 largest-tumor 
   ("**Negative cases (no tumor):** teach the model “when NOT to draw a box” — missing in the paper.",0),
   ("**Multi-box** (connected-components: split touching tumor-pixel clusters): 1 box/lesion, drop <30px. **35.5% of positive slices have ≥2 lesions**.",0),
   ("**Liver-CT-appropriate augmentation**: shift/small rotate ±12°/scale — NO flips (liver has anatomical orientation).",0),
-  ("**Data v3:** 1211 samples (558 pos / 653 neg), **split by patient**.",0)],0.4,bt,5.2,3.4,base=11.5)
+  ("**Dataset:** 1211 samples (558 pos / 653 neg), **split by patient**.",0)],0.4,bt,5.2,3.4,base=11.5)
 image(s,f"{OUT}/data/data_liver/images/liver_002_pos_z457.png",5.75,2.35,w=2.0,caption="WITH tumor")
 image(s,f"{OUT}/data/data_liver/images/liver_002_neg_z389.png",7.9,2.35,w=2.0,caption="NO tumor")
 footer(s)
 notes(s,"The paper uses only the central slice and no negatives. We add both — but 5 slices of one patient are highly correlated, so we count by patient, not by slice.")
 
 # ---- B3 training ----
-s=newslide(); bt=header(s,"Improvement (3): training + one failed experiment","Part B — our improvements")
-bullets(s,[("**LoRA on the LLM** (small inserted matrices, keeps base weights) + **full fine-tune of the Vision tower** (fp32, LR 1e-5).",0),
-  ("**Loss:** standard cross-entropy.",0),
-  ("**Failed experiment (v4 — BCE-head):** added a BCE branch for the draw/no-draw decision → localization **COLLAPSED** (IoU 0.32→0.071; recall@0.25 54%→10%).",0),
-  ("Two overlapping bugs: (1) **λ_BCE too large, overpowering the coordinate loss**; (2) **checkpoint reload bug** (LoRA key mismatch → weights silently in missing_keys).",1),
-  ("→ Lesson: tune λ carefully + **hard-fail on missing keys**.",1)],0.4,bt,5.6,3.6,base=12.0)
-image(s,f"{OUT}/bce_collapse_en.png",6.15,bt+0.35,w=3.5,caption="v4 (BCE-head) collapses vs v3")
+s=newslide(); bt=header(s,"Improvement (3): training setup","Part B — our improvements")
+bullets(s,[
+  ("**LoRA on the LLM** (small inserted matrices, keeps base weights): learn only a small delta, don't damage base skills.",0),
+  ("**Full fine-tune of the Vision tower** (fp32, LR 1e-5) — unlock the “eyes” to learn medical features (the key step, see previous slide).",0),
+  ("**Two separate learning-rate groups** (LoRA 2e-4 / vision 1e-5) for stable training.",0),
+  ("**Loss:** standard language cross-entropy — box coordinates are text tokens, no separate geometric loss.",0),
+  ("Runs in **bf16** on a single GPU — fits a student budget.",0)],0.4,bt,9.2,3.4,base=12.5)
 footer(s)
-notes(s,"We report the failure too: v4 had both a loss-balance risk and a checkpoint bug, so it was dropped. The lesson is to control both the loss and the load/merge pipeline.")
+notes(s,"Compact training setup: LoRA keeps base LLM skills, unlocking vision learns medical features, two LR groups keep it stable. Boxes are text tokens, so plain language loss suffices; runs on 1 GPU.")
 
 # ---- B4 eval ----
 s=newslide(); bt=header(s,"Improvement (4): stricter EVALUATION — our strongest contribution","Part B — our improvements")
@@ -271,7 +271,7 @@ footer(s)
 notes(s,"Our biggest contribution is the evaluation method — is there a tumor, where is it, and when to defer to a doctor — all read straight from the generation, no extra network.")
 
 # ---- C1 detection ----
-s=newslide(); bt=header(s,"Result: Detection (tumor / no tumor) — GOOD","Part C — Results (model v3, n=25 pos / 2 neg)")
+s=newslide(); bt=header(s,"Result: Detection (tumor / no tumor) — GOOD","Part C — Results (our model, n=25 pos / 2 neg)")
 table(s,["Metric","Zero-shot","Fine-tuned"],
   [["Detection F1 (patient)","0.33","0.89"],
    ["Sensitivity (catch tumor)","20%","80% (20/25)"],
@@ -329,19 +329,19 @@ footer(s)
 notes(s,"Track 1 — richer images (multi-window, 2.5D, multi-phase) and more trustworthy results (external validation, more negatives). ①⑤ tie straight to results; ②③ are design-based, so marked not-yet-measured. External validation = testing on other CT sets (IRCADb/MSD). FROC = multi-lesion detection curve. calibration = aligning confidence with true probability.")
 
 # ---- D3 future2 ----
-s=newslide(); bt=header(s,"Future work (2): grounded reporting · generalist","Part D — [MEASURED] · [FAILED EXPERIMENT] · [ASSUMED]")
+s=newslide(); bt=header(s,"Future work (2): grounded reporting · generalist","Part D — [MEASURED] · [SCOPE] · [ASSUMED]")
 table(s,["#","Limitation (source)","Next direction","Cost"],
   [["④","pIoU only 0.27 [MEASURED]","MedSAM tight masks + polygon-as-token","🟡 moderate"],
    ["⑥","Detection only [SCOPE]","Grounded report (each sentence anchored to a box)","🟡 moderate"],
    ["⑦","Liver tumor only [ASSUMED]","Multi-organ generalist","🔴 long-term"],
-   ["⑧","BCE-head failure [FAILED]","Smarter loss balancing (uncertainty weighting + GIoU)","🟢 low"]],0.4,bt+0.15,9.2,colw=[0.4,3.2,4.1,1.5],fs=10,hfs=10,rh=0.52)
+   ["⑧","Token-only CE for coordinates [SCOPE]","Smarter loss balancing (uncertainty weighting + geometric GIoU)","🟢 low"]],0.4,bt+0.15,9.2,colw=[0.4,3.2,4.1,1.5],fs=10,hfs=10,rh=0.52)
 footer(s)
-notes(s,"Track 2 — from pointing to reporting-with-evidence, then a multi-organ generalist. Even the failed BCE-head experiment yields a direction: smarter loss balancing. Verify tool names (MedSAM/FROC/IRCADb) before submission.")
+notes(s,"Track 2 — from pointing to reporting-with-evidence, then a multi-organ generalist; and smarter loss (geometric GIoU) instead of token-only coordinate CE. Verify tool names (MedSAM/FROC/IRCADb) before submission.")
 
 # ---- D4 conclusion ----
 s=newslide(); bt=header(s,"Conclusion","Part D")
 bullets(s,[("**Proof of a mechanism:** region-centric (localize-then-read) is **feasible at ~8B, 1 GPU**.",0),
-  ("**Core result (v3):** Detection F1 **0.89** · pIoU **0.27** · FP **1.5%** — but the value is the **honest evaluation + selective prediction**, not the score.",0),
+  ("**Core result:** Detection F1 **0.89** · pIoU **0.27** · FP **1.5%** — but the value is the **honest evaluation + selective prediction**, not the score.",0),
   ("**Honest:** PoC on 1 dataset / 1 task; small n, wide CI; no clinical-system claim.",0),
   ("**Expansion map:** richer images → more trustworthy → grounded reporting & generalist.",0)],0.4,bt,9.2,3.2,base=12.5)
 notebox(s,"Closing line","We don't claim to have arrived — we map the road and say clearly where it's still steep.",0.4,bt+3.05,9.2,0.6,kind="info")

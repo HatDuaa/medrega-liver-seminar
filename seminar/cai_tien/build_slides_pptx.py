@@ -270,7 +270,7 @@ bullets(s, [
   ("**Ca ÂM (không u):** dạy model “khi nào KHÔNG vẽ box” — paper thiếu.", 0),
   ("**Multi-box** (connected-components: tách cụm pixel u dính nhau): 1 box/ổ, lọc <30px. **35.5% lát dương có ≥2 ổ**.", 0),
   ("**Augment hợp CT gan**: dịch/xoay nhẹ ±12°/scale — KHÔNG lật (gan có hướng giải phẫu).", 0),
-  ("**Data v3:** 1211 mẫu (558 dương/653 âm), **split theo bệnh nhân**.", 0),
+  ("**Bộ dữ liệu:** 1211 mẫu (558 dương/653 âm), **split theo bệnh nhân**.", 0),
 ], 0.4, bt, 5.2, 3.4, base=11.5)
 image(s, "seminar/code/data/data_liver/images/liver_002_pos_z457.png", 5.75, 2.35, w=2.0, caption="CÓ u")
 image(s, "seminar/code/data/data_liver/images/liver_002_neg_z389.png", 7.9, 2.35, w=2.0, caption="KHÔNG u")
@@ -278,17 +278,16 @@ footer(s, 7+1)
 notes(s, "Câu nói: Paper chỉ dùng lát trung tâm, không có ca âm. Chúng em thêm cả hai — nhưng 5 lát của một người tương quan cao, nên đếm bằng bệnh nhân, không đếm bằng lát.\n\nconnected-components = gán nhãn từng vùng pixel liên thông (scipy.ndimage.label).")
 
 # S7
-s = newslide(); bt = header(s, "Cải tiến (3): huấn luyện + một thí nghiệm thất bại", "Phần B — Cải tiến")
+s = newslide(); bt = header(s, "Cải tiến (3): thiết lập huấn luyện", "Phần B — Cải tiến")
 bullets(s, [
-  ("**LoRA trên LLM** (chèn ma trận nhỏ, giữ nguyên trọng số gốc) + **full-finetune Vision** (fp32, LR 1e-5).", 0),
-  ("**Loss:** cross-entropy tiêu chuẩn.", 0),
-  ("**Bài học thất bại (v4 — BCE-head):** thêm nhánh BCE cho quyết định vẽ/không vẽ → localization **SẬP** (IoU 0.32→0.071; recall@0.25 54%→10%).", 0),
-  ("Hai lỗi chồng nhau: (1) **λ_BCE quá lớn lấn át loss toạ độ**; (2) **bug nạp lại checkpoint** (lệch key LoRA → trọng số rơi vào missing_keys im lặng).", 1),
-  ("→ Bài học: cân λ cẩn thận + **hard-fail khi thiếu key**.", 1),
-], 0.4, bt, 5.6, 3.6, base=12.0)
-image(s, "seminar/code/bce_collapse.png", 6.15, bt+0.35, w=3.5, caption="v4 (BCE-head) SẬP so với v3")
-footer(s, 9)
-notes(s, "Câu nói: Chúng em kể cả cái hỏng — v4 vừa có rủi ro cân loss vừa có lỗi checkpoint nên bị loại. Bài học là kiểm soát cả loss lẫn quy trình load/merge.\n\nBCE = Binary Cross-Entropy (loss phân loại nhị phân). recall@0.25 = bắt được tính là đúng nếu IoU≥0.25.")
+  ("**LoRA trên LLM** (Low-Rank Adaptation — chèn ma trận nhỏ, giữ nguyên trọng số gốc): chỉ học thêm phần nhỏ, không phá năng lực gốc.", 0),
+  ("**Full-finetune Vision tower** (fp32, LR 1e-5) — mở khoá “mắt” để học đặc trưng y khoa (bước tạo khác biệt, xem slide trước).", 0),
+  ("**2 nhóm learning-rate riêng** (LoRA 2e-4 / vision 1e-5) để huấn luyện ổn định, không nổ số.", 0),
+  ("**Loss:** cross-entropy ngôn ngữ tiêu chuẩn — toạ độ box coi như token chữ, không cần loss hình học riêng.", 0),
+  ("Chạy **bf16**, chỉ **1 GPU** — phù hợp tài nguyên sinh viên.", 0),
+], 0.4, bt, 9.2, 3.4, base=12.5)
+footer(s)
+notes(s, "Câu nói: Thiết lập huấn luyện gọn — LoRA cho LLM giữ năng lực gốc, mở khoá vision để học đặc trưng y khoa, 2 nhóm LR để ổn định. Box là token chữ nên dùng loss ngôn ngữ bình thường; chạy 1 GPU.")
 
 # S8
 s = newslide(); bt = header(s, "Cải tiến (4): ĐÁNH GIÁ chặt hơn — đóng góp mạnh nhất", "Phần B — Cải tiến")
@@ -308,7 +307,7 @@ notes(s, "Câu nói: Đóng góp lớn nhất ở phương pháp đánh giá —
 # PHẦN C — KẾT QUẢ
 # =========================================================
 # S9
-s = newslide(); bt = header(s, "Kết quả: Phát hiện (có/không u) — TỐT", "Phần C — Kết quả (model v3, n=25 dương / 2 âm)")
+s = newslide(); bt = header(s, "Kết quả: Phát hiện (có/không u) — TỐT", "Phần C — Kết quả (model của nhóm, n=25 dương / 2 âm)")
 table(s, ["Chỉ số", "Zero-shot", "Fine-tune"], [
   ["Detection F1 (bệnh nhân)", "0.33", "0.89"],
   ["Sensitivity (bắt u)", "20%", "80% (20/25)"],
@@ -381,21 +380,21 @@ footer(s, 15)
 notes(s, "Câu nói: Mạch 1 — làm ảnh giàu hơn (multi-window, 2.5D, đa pha) và kết quả đáng tin hơn (external validation, thêm ca âm). ①⑤ nối thẳng số Kết quả; ②③ suy từ thiết kế nên ghi rõ CHƯA đo.\n\nExternal validation = kiểm trên bộ CT khác (IRCADb/MSD). FROC = đường cong phát hiện đa tổn thương. calibration = hiệu chỉnh độ tự tin.")
 
 # S13b
-s = newslide(); bt = header(s, "Hướng tương lai (2): nói-có-dẫn-chứng · generalist", "Phần D — [ĐO ĐƯỢC] · [THÍ NGHIỆM HỎNG] · [GIẢ ĐỊNH]")
+s = newslide(); bt = header(s, "Hướng tương lai (2): nói-có-dẫn-chứng · generalist", "Phần D — [ĐO ĐƯỢC] · [PHẠM VI] · [GIẢ ĐỊNH]")
 table(s, ["#", "Hạn chế (nguồn)", "Hướng đi tiếp", "Chi phí"], [
   ["④", "pIoU chỉ 0.27 [ĐO ĐƯỢC]", "MedSAM khoanh khít + polygon-as-token", "🟡 vừa"],
   ["⑥", "Chỉ detect [PHẠM VI]", "Grounded report (mỗi câu neo 1 box)", "🟡 vừa"],
   ["⑦", "Chỉ u gan [GIẢ ĐỊNH]", "Generalist đa cơ quan", "🔴 dài hạn"],
-  ["⑧", "BCE-head fail [HỎNG]", "Cân bằng loss (uncertainty weighting + GIoU)", "🟢 thấp"],
+  ["⑧", "Loss CE chỉ khớp token toạ độ [PHẠM VI]", "Cân bằng loss thông minh (uncertainty weighting + loss hình học GIoU)", "🟢 thấp"],
 ], 0.4, bt+0.15, 9.2, colw=[0.4,3.2,4.1,1.5], fs=10, hfs=10, rh=0.52)
-footer(s, 16)
-notes(s, "Câu nói: Mạch 2 — từ chỉ-chỗ tiến tới nói-có-dẫn-chứng rồi generalist đa cơ quan. Kể cả thí nghiệm hỏng ⑧ cũng đẻ ra một hướng. Tên tool (MedSAM/FROC/IRCADb) cần tự xác minh nguồn.\n\nMedSAM = mô hình phân vùng ảnh y tế. polygon-as-token = viết đường viền u thành chuỗi toạ độ. GIoU = IoU tổng quát.")
+footer(s)
+notes(s, "Câu nói: Mạch 2 — từ chỉ-chỗ tiến tới nói-có-dẫn-chứng rồi generalist đa cơ quan; và loss thông minh hơn (hình học GIoU) thay vì chỉ khớp token toạ độ. Tên tool (MedSAM/FROC/IRCADb) cần tự xác minh nguồn.\n\nMedSAM = mô hình phân vùng ảnh y tế. polygon-as-token = viết đường viền u thành chuỗi toạ độ. GIoU = IoU tổng quát.")
 
 # S14
 s = newslide(); bt = header(s, "Kết luận", "Phần D")
 bullets(s, [
   ("**Chứng minh một cơ chế:** region-centric (khoanh-rồi-đọc) **khả thi ở ~8B, 1 GPU**.", 0),
-  ("**Đóng góp cốt lõi (v3):** Detection F1 **0.89** · pIoU **0.27** · FP **1.5%** — nhưng giá trị nằm ở **khung đánh giá trung thực + selective prediction**, không phải điểm số.", 0),
+  ("**Đóng góp cốt lõi:** Detection F1 **0.89** · pIoU **0.27** · FP **1.5%** — nhưng giá trị nằm ở **khung đánh giá trung thực + selective prediction**, không phải điểm số.", 0),
   ("**Trung thực:** PoC trên 1 dataset/1 task; n nhỏ, CI rộng; không tuyên bố hệ thống lâm sàng.", 0),
   ("**Bản đồ mở rộng:** ảnh giàu hơn → đáng tin hơn → nói-có-dẫn-chứng & generalist.", 0),
 ], 0.4, bt, 9.2, 3.2, base=12.5)
