@@ -91,6 +91,8 @@ def build(LANG):
         tf2=tb_(slide,l+0.1,t+h*0.58,w-0.2,h*0.4); p2=tf2.paragraphs[0]; p2.alignment=PP_ALIGN.CENTER
         for rr,isb in _runs(p2,label): _set(rr,11,INK,bold=isb)
 
+    def notes(slide,text): slide.notes_slide.notes_text_frame.text=text
+
     # ---- S1 TITLE ----
     s=prs.slides.add_slide(BLANK)
     rect(s,0,0,SW,0.24,NAVY); rect(s,0,1.55,SW,2.30,NAVY)
