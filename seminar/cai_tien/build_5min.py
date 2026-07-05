@@ -144,6 +144,33 @@ def build(LANG):
     ],0.4,cy+1.52,9.2,1.5,base=12.5,gap=8)
     notebox(s,T("⚠ Lưu ý","⚠ Note"),T("n nhỏ (~25 bn dương / 2 âm) → CI rộng; đây là PoC, không tuyên bố lâm sàng.",
               "small n (~25 pos patients / 2 neg) → wide CI; a PoC, no clinical claim."),0.4,cy+3.0,9.2,0.6,kind="caveat")
+    notes(s,T(
+"""GIẢI THÍCH METRIC (Presenter View):
+• Detection F1 0.89 = cân bằng recall (bắt u) & precision (không báo bừa); tính PER-PATIENT để không thổi phồng.
+• Sensitivity 80% = bắt đúng 20/25 bệnh nhân có u (sót 5) — con số lâm sàng quan trọng nhất (sót u = nguy hiểm).
+• Localization pIoU 0.27 = độ chồng lấn box (giao/hợp), CÓ PHẠT khi vẽ thừa/thiếu ổ → mức trung bình, chỗ còn yếu (khoanh được vùng nhưng chưa khít).
+• recall@IoU.25 54% = 54% u được khoanh tạm trúng (chồng lấn ≥ 0.25).
+• False-positive 1.5% = trên lát KHÔNG u, hiếm khi bịa box (điểm tốt).
+• CI95 [0.19, 0.36] = khoảng tin cậy 95%, số dao động vì mẫu nhỏ (không phải số cứng).
+• Không quên = nhờ LoRA giữ trọng số gốc → vẫn hội thoại / JSON / thơ / toán.
+• ~0.27 vs MedRegA ~0.23 = cùng khoảng dù nhỏ 5×, KHÁC dataset nên chỉ tham khảo, KHÔNG claim hơn.
+• Caveat: n nhỏ (25 dương / 2 âm), CI rộng, là PoC — không tuyên bố lâm sàng.
+
+CÂU NÓI (~40s): "Model đạt F1 0.89 ở phát hiện, độ nhạy 80% (20/25 bệnh nhân). Định vị pIoU 0.27 mới trung bình, chúng em không giấu. Điểm cộng: hiếm bịa u (FP 1.5%) và không quên nhờ LoRA. Định vị ngang MedRegA dù nhỏ 5× nhưng khác dữ liệu nên chỉ tham khảo. Đây là PoC, mẫu nhỏ nên còn hạn chế thống kê."
+""",
+"""METRIC EXPLANATION (Presenter View):
+• Detection F1 0.89 = balance of recall (catching tumors) & precision (not over-flagging); computed PER-PATIENT to avoid inflation.
+• Sensitivity 80% = caught 20/25 tumor patients (missed 5) — the most clinically important number (missing a tumor is dangerous).
+• Localization pIoU 0.27 = box overlap (intersection/union), PENALIZED for extra/missing lesions → moderate, the weaker point (finds the region but not tightly).
+• recall@IoU.25 54% = 54% of tumors roughly localized (overlap ≥ 0.25).
+• False-positive 1.5% = on tumor-free slices, rarely invents a box (good).
+• CI95 [0.19, 0.36] = 95% confidence interval; the number varies because n is small (not a hard value).
+• No forgetting = thanks to LoRA keeping base weights → still chats / JSON / poem / math.
+• ~0.27 vs MedRegA ~0.23 = same ballpark despite 5× smaller, DIFFERENT dataset so reference only, NOT a 'we beat them' claim.
+• Caveat: small n (25 pos / 2 neg), wide CI, a PoC — no clinical claim.
+
+SCRIPT (~40s): "Our model reaches F1 0.89 on detection, 80% sensitivity (20/25 patients). Localization pIoU is 0.27 — only moderate, we don't hide it. Pluses: rarely invents tumors (FP 1.5%) and no forgetting thanks to LoRA. Localization is on par with MedRegA despite being 5× smaller, but different data so reference only. This is a PoC, small sample, so statistical limits remain."
+"""))
     footer(s,3)
 
     # ---- S4 WHY: FINE-TUNE DRIVES IT (baseline ablation) ----
