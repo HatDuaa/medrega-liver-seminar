@@ -67,7 +67,7 @@ def build(LANG):
             tf=tb_(slide,l,t+pic.height/914400+0.03,max(pic.width/914400,2.0),0.3)
             pp=tf.paragraphs[0]; pp.alignment=PP_ALIGN.CENTER; r=pp.add_run(); r.text=caption; _set(r,8,FOOTTX,italic=True)
         return pic
-    def table(slide,headers,rows,l,t,w,colw=None,fs=11,hfs=11,rh=0.34):
+    def table(slide,headers,rows,l,t,w,colw=None,fs=11,hfs=11,rh=0.34,first_bold=True):
         g=slide.shapes.add_table(len(rows)+1,len(headers),Inches(l),Inches(t),Inches(w),Inches(rh*(len(rows)+1))).table
         g.first_row=False; g.horz_banding=False
         if colw:
@@ -80,7 +80,7 @@ def build(LANG):
             for j,val in enumerate(row):
                 c=g.cell(i,j); c.fill.solid(); c.fill.fore_color.rgb=WHITE if i%2 else CARD2; c.vertical_anchor=MSO_ANCHOR.MIDDLE
                 c.margin_left=Pt(5); c.margin_top=Pt(1); c.margin_bottom=Pt(1)
-                for r,isb in _runs(c.text_frame.paragraphs[0],val): _set(r,fs,INK,bold=(isb or j==0))
+                for r,isb in _runs(c.text_frame.paragraphs[0],val): _set(r,fs,INK,bold=(isb or (first_bold and j==0)))
     IOU=T("seminar/code/iou_frozen_vs_unfrozen.png","seminar/code/iou_frozen_vs_unfrozen_en.png")
     DET=T("seminar/code/detect_before_after.png","seminar/code/detect_before_after_en.png")
 
@@ -97,19 +97,27 @@ def build(LANG):
     rect(s,0,5.34,SW,0.29,FOOTBG); tf3=tb_(s,0.35,5.40,9,0.18)
     r3=tf3.paragraphs[0].add_run(); r3.text=T("Seminar Học sâu · 2026","Deep Learning Seminar · 2026"); _set(r3,9,FOOTTX)
 
-    # ---- S2 ARCHITECTURE & METHOD ----
-    s=prs.slides.add_slide(BLANK); bt=header(s,T("Kiến trúc & cách làm của nhóm","Our architecture & method"))
-    bullets(s,[
-      (T("**Backbone:** Gemma 4 E4B (~8B) — nhỏ hơn MedRegA (~40B) 5×, chạy **1 GPU**; **mở khoá vision tower** để học đặc trưng y khoa.",
-         "**Backbone:** Gemma 4 E4B (~8B) — 5× smaller than MedRegA (~40B), runs on **1 GPU**; **unlock the vision tower** to learn medical features."),0),
-      (T("**Dữ liệu:** đa lát + **ca âm** (không u) + **multi-box** (tách từng ổ) — khác paper chỉ 1 lát; split theo bệnh nhân.",
-         "**Data:** multi-slice + **negatives** (no tumor) + **multi-box** (per-lesion) — vs paper's single slice; split by patient."),0),
-      (T("**Huấn luyện:** LoRA (LLM) + full-finetune vision; box viết dưới dạng **text toạ độ** (0–1000).",
-         "**Training:** LoRA (LLM) + full fine-tune vision; boxes written as **coordinate text** (0–1000)."),0),
-      (T("**Đánh giá (đóng góp chính):** per-patient + CI, **tách detection/localization**, **selective prediction** (biết khi nào không chắc).",
-         "**Evaluation (main contribution):** per-patient + CI, **detection/localization split**, **selective prediction** (knows when unsure)."),0),
-    ],0.4,bt,5.6,3.6,base=13.5,gap=11)
-    image(s,IOU,6.2,bt+0.15,w=3.5,caption=T("Mở vision = bước tạo khác biệt","Unlocking vision = the key step"))
+    # ---- S2 ARCHITECTURE & METHOD (limitation ↔ our choice) ----
+    s=prs.slides.add_slide(BLANK); bt=header(s,T("Kiến trúc & cách làm của nhóm","Our architecture & method"),
+        T("Mỗi lựa chọn vá đúng MỘT hạn chế của MedRegA","Each choice fixes ONE MedRegA limitation"))
+    table(s,[T("Hạn chế của MedRegA","MedRegA limitation"),T("Lựa chọn của nhóm (vì sao)","Our choice (why)")],
+      [[T("Dồn lên **LLM 40B**; “mắt” & “cầu” bất động → định vị không sắc",
+          "Load on the **40B LLM**; “eyes” & “bridge” frozen → localization not sharp"),
+        T("**Gemma 4 E4B (~8B)** + **mở khoá vision** (pIoU 0.015→0.27)",
+          "**Gemma 4 E4B (~8B)** + **unlock vision** (pIoU 0.015→0.27)")],
+       [T("Chỉ **1 lát trung tâm**, **không ca âm**, box gộp thô",
+          "Only **1 central slice**, **no negatives**, coarse box"),
+        T("**Đa lát + ca âm + multi-box** (tách từng ổ); split theo bệnh nhân",
+          "**Multi-slice + negatives + multi-box** (per-lesion); split by patient")],
+       [T("Chi phí **16×H800** — ngoài tầm sinh viên",
+          "Cost **16×H800** — out of reach for a student"),
+        T("**LoRA + full-finetune vision**, chạy **1 GPU**",
+          "**LoRA + full fine-tune vision**, runs on **1 GPU**")],
+       [T("**Per-image** (pseudoreplication); không abstain / CI",
+          "**Per-image** (pseudoreplication); no abstain / CI"),
+        T("**Per-patient + CI**, tách detect/localize, **selective prediction**",
+          "**Per-patient + CI**, detect/localize split, **selective prediction**")]],
+      0.4,bt+0.1,9.2,colw=[4.4,4.8],fs=11.5,hfs=12,rh=0.62,first_bold=False)
     footer(s,2)
 
     # ---- S3 RESULTS VS BASELINE ----
