@@ -116,9 +116,9 @@ def build(LANG):
         T("**Gemma 4 E4B (~8B)** + **mở khoá vision** (pIoU 0.015→0.27)",
           "**Gemma 4 E4B (~8B)** + **unlock vision** (pIoU 0.015→0.27)")],
        [T("Chỉ **1 lát trung tâm**, **không ca âm** → không đo được model bịa box",
-          "Only **1 central slice**, **no negatives**, coarse box"),
+          "Only **1 central slice**, **no negatives** → can't measure invented boxes"),
         T("**Đa lát + ca âm** (đo được false-positive); box khít từng ổ, split theo bệnh nhân",
-          "**Multi-slice + negatives + multi-box** (per-lesion); split by patient")],
+          "**Multi-slice + negatives** (measures false-positives); tight per-lesion boxes, split by patient")],
        [T("Chi phí **16×H800** — ngoài tầm sinh viên",
           "Cost **16×H800** — out of reach for a student"),
         T("**LoRA + full-finetune vision**, chạy **1 GPU**",
@@ -143,7 +143,7 @@ def build(LANG):
       (T("**Không quên:** vẫn hội thoại / JSON / thơ / toán (LoRA giữ trọng số gốc).",
          "**No forgetting:** still chats / JSON / poem / math (LoRA keeps base weights)."),0),
       (T("Định vị: cùng chuẩn (matched) mình **~0.32** vs MedRegA **~0.23**; pIoU CÓ PHẠT của mình 0.27 còn khắt khe hơn — đích họ lớn + box lỏng, khác dataset.",
-         "Localization ~0.27 ≈ **same ballpark as MedRegA (~0.23)** despite 5× smaller — different dataset, reference only."),0),
+         "Localization on the same (matched) basis: **~0.32 vs MedRegA ~0.23**; our **penalized** pIoU (0.27) is stricter still — their targets are larger with looser boxes, different dataset."),0),
     ],0.4,cy+1.52,9.2,1.5,base=12.5,gap=8)
     notebox(s,T("⚠ Lưu ý","⚠ Note"),T("Cỡ mẫu còn nhỏ — khoảng 25 bệnh nhân có u và 2 không u — nên các con số còn dao động; đây là nghiên cứu bước đầu (proof-of-concept), chưa phải hệ thống lâm sàng.",
               "The test set is small — about 25 tumor patients and 2 without — so the numbers still vary; this is a proof-of-concept, not a clinical system."),0.4,cy+2.9,9.2,0.72,kind="caveat")
@@ -169,7 +169,7 @@ CÂU NÓI (~40s): "Model đạt F1 0.89 ở phát hiện, độ nhạy 80% (20/2
 • False-positive 1.5% = on tumor-free slices, rarely invents a box (good).
 • CI95 [0.19, 0.36] = 95% confidence interval; the number varies because n is small (not a hard value).
 • No forgetting = thanks to LoRA keeping base weights → still chats / JSON / poem / math.
-• ~0.27 vs MedRegA ~0.23 = same ballpark despite 5× smaller, DIFFERENT dataset so reference only, NOT a 'we beat them' claim.
+• vs MedRegA (Q&A): their IoU 0.23 is MATCHED-ONLY (no miss penalty — Algorithm 1 Hungarian) on mostly LARGE structures + LOOSE boxes ("need not be tight", paper). Same matched basis: ours ~0.32 > 0.23. Our pIoU 0.27 is PENALIZED, stricter. Don't claim "we win" (different dataset). Don't say "they merge one box" — they are multi-box too (Figure 8).
 • Caveat: small n (25 pos / 2 neg), wide CI, a PoC — no clinical claim.
 
 SCRIPT (~40s): "Our model reaches F1 0.89 on detection, 80% sensitivity (20/25 patients). Localization pIoU is 0.27 — only moderate, we don't hide it. Pluses: rarely invents tumors (FP 1.5%) and no forgetting thanks to LoRA. Localization is on par with MedRegA despite being 5× smaller, but different data so reference only. This is a PoC, small sample, so statistical limits remain."
