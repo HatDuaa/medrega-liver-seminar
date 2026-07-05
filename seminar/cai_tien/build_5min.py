@@ -196,15 +196,15 @@ SCRIPT (~40s): "Our model reaches F1 0.89 on detection, 80% sensitivity (20/25 p
     s=prs.slides.add_slide(BLANK); bt=header(s,T("Hướng tương lai","Future work"),
         T("Mỗi hướng nhắm vá một hạn chế đã thấy","Each direction targets a limitation we observed"))
     bullets(s,[
-      (T("Sót u đồng tỉ trọng (cửa sổ CT rộng) → **multi-window** (cửa sổ gan hẹp) + **2.5D** đưa lại ngữ cảnh 3D.",
-         "Missed isointense tumors (wide CT window) → **multi-window** (narrow liver window) + **2.5D** to restore 3D context."),0),
-      (T("Định vị còn thô (pIoU 0.27) → segmenter chuyên (**MedSAM**) hoặc **polygon** để khoanh khít hơn.",
-         "Coarse localization (pIoU 0.27) → a dedicated segmenter (**MedSAM**) or **polygon** for tighter boxes."),0),
-      (T("Mẫu nhỏ, một bộ dữ liệu → **external validation** (bộ khác) + **calibration** tăng độ tin cậy.",
-         "Small sample, single dataset → **external validation** + **calibration** for reliability."),0),
-      (T("Mới ở mức phát hiện → **grounded report** (báo cáo có dẫn chứng) và mở rộng **đa cơ quan**.",
-         "Detection only for now → **grounded report** (evidence-linked) and **multi-organ** extension."),0),
-    ],0.4,bt+0.15,9.2,2.9,base=13.5,gap=12)
+      (T("**Mở rộng phạm vi:** huấn luyện thêm các task y khoa khác (đa cơ quan, nhiều loại bệnh); tiến tới **báo cáo có dẫn chứng** (grounded report).",
+         "**Broaden scope:** train on other medical tasks (multiple organs, more diseases); toward **grounded reporting**."),0),
+      (T("**Đưa lại thông tin 3D:** ép ảnh 3D→2D làm mất ngữ cảnh, khó tách u với mạch máu (khác cách bác sĩ đọc) → **gán nhiều lát liên tiếp (2.5D)**; xa hơn: **CT đa pha** phân biệt u/mạch bằng kiểu ngấm thuốc.",
+         "**Restore 3D context:** 3D→2D loses context, hard to separate tumor from vessels (unlike radiologists) → **stack consecutive slices (2.5D)**; further: **multi-phase CT** via contrast dynamics."),0),
+      (T("**Bổ sung tri thức y khoa tiếng Việt:** huấn luyện thêm dữ liệu tiếng Việt vì chuyên ngành nhiều thuật ngữ ngách → trả lời đúng ngữ cảnh Việt.",
+         "**Add Vietnamese medical knowledge:** train on more Vietnamese data (many niche domain terms) for correct Vietnamese-context answers."),0),
+      (T("**Tăng dữ liệu huấn luyện:** dữ liệu hiện còn ít nên n khi đánh giá chưa đủ lớn để tin cậy → thêm dữ liệu + **external validation** + **calibration**.",
+         "**More training data:** current data is limited so evaluation n is too small to trust → more data + **external validation** + **calibration**."),0),
+    ],0.4,bt+0.15,9.2,3.0,base=13,gap=11)
     notebox(s,T("Tổng kết","Closing"),
       T("Không hứa đã tới đích — công trình chỉ ra con đường và những chỗ còn dốc.",
         "We don't claim to have arrived — we map the road and where it's still steep."),0.4,bt+3.05,9.2,0.6,kind="info")
