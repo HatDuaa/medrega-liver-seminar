@@ -84,6 +84,13 @@ def build(LANG):
     IOU=T("seminar/code/iou_frozen_vs_unfrozen.png","seminar/code/iou_frozen_vs_unfrozen_en.png")
     DET=T("seminar/code/detect_before_after.png","seminar/code/detect_before_after_en.png")
 
+    def statcard(slide,l,t,w,h,num,label):
+        rect(slide,l,t,w,h,CARD2)
+        tf=tb_(slide,l,t+0.14,w,h*0.52,MSO_ANCHOR.BOTTOM); p=tf.paragraphs[0]; p.alignment=PP_ALIGN.CENTER
+        r=p.add_run(); r.text=num; _set(r,32,NAVY,bold=True,font=TFONT)
+        tf2=tb_(slide,l+0.1,t+h*0.58,w-0.2,h*0.4); p2=tf2.paragraphs[0]; p2.alignment=PP_ALIGN.CENTER
+        for rr,isb in _runs(p2,label): _set(rr,11,INK,bold=isb)
+
     # ---- S1 TITLE ----
     s=prs.slides.add_slide(BLANK)
     rect(s,0,0,SW,0.24,NAVY); rect(s,0,1.55,SW,2.30,NAVY)
@@ -120,36 +127,39 @@ def build(LANG):
       0.4,bt+0.1,9.2,colw=[4.4,4.8],fs=11.5,hfs=12,rh=0.62,first_bold=False)
     footer(s,2)
 
-    # ---- S3 RESULTS VS BASELINE ----
-    s=prs.slides.add_slide(BLANK); bt=header(s,T("Kết quả vs baseline (zero-shot → fine-tune)","Results vs baseline (zero-shot → fine-tuned)"))
-    table(s,[T("Chỉ số","Metric"),T("Baseline","Baseline"),T("Của mình","Ours")],
-      [[T("Detection F1 (bệnh nhân)","Detection F1 (patient)"),"0.33","0.89"],
-       [T("Sensitivity (bắt u)","Sensitivity (catch tumor)"),"20%","80%"],
-       [T("Localization pIoU","Localization pIoU"),"0.002","0.27"],
-       ["recall@IoU 0.25","0%","54%"],
-       [T("False-positive (lát âm)","False-positive (neg. slice)"),"2.2%","1.5%"]],
-      0.4,bt+0.05,5.5,colw=[2.9,1.3,1.3],fs=11,hfs=11,rh=0.40)
-    bullets(s,[(T("**Không quên:** vẫn hội thoại / JSON / thơ / toán (LoRA giữ trọng số gốc).",
-                 "**No forgetting:** still chats / JSON / poem / math (LoRA keeps base weights)."),0)],0.4,bt+2.35,5.5,0.7,base=12)
-    notebox(s,T("⚠ Lưu ý","⚠ Note"),T("n nhỏ (~25 bn dương, 2 âm) → CI rộng; đây là PoC, không tuyên bố lâm sàng.",
-              "small n (~25 pos patients, 2 neg) → wide CI; this is a PoC, no clinical claim."),0.4,bt+3.0,5.5,0.7,kind="caveat")
-    image(s,DET,6.1,bt+0.25,w=3.7,caption=T("Trước → sau fine-tune","Before → after fine-tune"))
+    # ---- S3 OUR RESULTS (publish metrics) ----
+    s=prs.slides.add_slide(BLANK); bt=header(s,T("Kết quả của nhóm","Our results"),
+        T("Model của nhóm đạt được — công bố trực tiếp","What our model achieves — reported directly"))
+    cy=bt+0.12; cw=2.95; gp=0.18
+    statcard(s,0.4,cy,cw,1.35,"0.89",T("Detection F1 (bệnh nhân)","Detection F1 (patient)"))
+    statcard(s,0.4+cw+gp,cy,cw,1.35,"80%",T("Sensitivity — bắt được u","Sensitivity — catch tumors"))
+    statcard(s,0.4+2*(cw+gp),cy,cw,1.35,"0.27",T("Localization pIoU (định vị)","Localization pIoU"))
+    bullets(s,[
+      (T("**recall@IoU.25 = 54%** · **False-positive = 1.5%** (hiếm khi bịa box) · pIoU CI95 [0.19, 0.36].",
+         "**recall@IoU.25 = 54%** · **False-positive = 1.5%** (rarely invents boxes) · pIoU CI95 [0.19, 0.36]."),0),
+      (T("**Không quên:** vẫn hội thoại / JSON / thơ / toán (LoRA giữ trọng số gốc).",
+         "**No forgetting:** still chats / JSON / poem / math (LoRA keeps base weights)."),0),
+      (T("Định vị ~0.27 ≈ **cùng khoảng MedRegA (~0.23)** dù model nhỏ 5× — khác dataset, chỉ tham khảo.",
+         "Localization ~0.27 ≈ **same ballpark as MedRegA (~0.23)** despite 5× smaller — different dataset, reference only."),0),
+    ],0.4,cy+1.52,9.2,1.5,base=12.5,gap=8)
+    notebox(s,T("⚠ Lưu ý","⚠ Note"),T("n nhỏ (~25 bn dương / 2 âm) → CI rộng; đây là PoC, không tuyên bố lâm sàng.",
+              "small n (~25 pos patients / 2 neg) → wide CI; a PoC, no clinical claim."),0.4,cy+3.0,9.2,0.6,kind="caveat")
     footer(s,3)
 
-    # ---- S4 VS MEDREGA ----
-    s=prs.slides.add_slide(BLANK); bt=header(s,T("Kết quả vs MedRegA","Results vs MedRegA"))
-    table(s,[T("Khía cạnh","Aspect"),"MedRegA",T("Của mình","Ours")],
-      [[T("Quy mô","Scale"),"~40B, 16×H800","~8B, 1 GPU"],
-       [T("Vào 3D","Into 3D"),T("1 lát trung tâm","1 central slice"),T("đa lát + ca âm","multi-slice + negatives")],
-       [T("Đơn vị đánh giá","Eval unit"),"per-image","per-patient + CI"],
-       [T("Detect vs Localize","Detect vs Localize"),T("gộp","merged"),T("tách riêng","separated")],
-       [T("Ca âm / Bất định","Negatives / Uncertainty"),T("không","none"),"FP + selective prediction"],
-       ["Localization","IoU ~0.23","pIoU ~0.27"]],
-      0.4,bt+0.05,6.0,colw=[2.0,2.0,2.0],fs=10,hfs=10.5,rh=0.36)
-    notebox(s,T("Đọc đúng cách","Read it correctly"),
-      T("KHÔNG so số trực tiếp (khác data/metric); pIoU có PHẠT nên khắt khe hơn. Đóng góp thật = khung đánh giá trung thực + độ tin cậy.",
-        "NOT a direct number match (different data/metric); pIoU is PENALIZED, so stricter. Real contribution = honest evaluation + reliability layer."),
-      6.55,bt+0.1,3.1,2.4,kind="info")
+    # ---- S4 WHY: FINE-TUNE DRIVES IT (baseline ablation) ----
+    s=prs.slides.add_slide(BLANK); bt=header(s,T("Vì đâu có kết quả? — nhờ fine-tune","Where do the gains come from? — fine-tuning"),
+        T("Không chỉ đổi model: zero-shot (model mới, chưa train) → sau fine-tune","Not just a model swap: zero-shot (new model, untrained) → fine-tuned"))
+    bullets(s,[
+      (T("**Đổi model thôi KHÔNG đủ:** Gemma zero-shot (chưa fine-tune) chỉ **F1 0.33**, gần như luôn trả “No tumor”.",
+         "**Swapping models alone is NOT enough:** zero-shot Gemma (untrained) scores only **F1 0.33**, almost always says “No tumor”."),0),
+      (T("**Fine-tune tạo ra năng lực:** F1 0.33→**0.89**, recall 0→**54%**, pIoU 0.002→**0.27**.",
+         "**Fine-tuning creates the capability:** F1 0.33→**0.89**, recall 0→**54%**, pIoU 0.002→**0.27**."),0),
+      (T("**Bằng chứng thêm:** đóng băng vision → pIoU 0.015; **mở khoá + train → 0.27** — cách train mới là mấu chốt.",
+         "**Extra evidence:** frozen vision → pIoU 0.015; **unlock + train → 0.27** — the training choice is the key."),0),
+    ],0.4,bt+0.1,5.5,3.0,base=13,gap=12)
+    image(s,DET,6.1,bt+0.2,w=3.7,caption=T("Trước → sau fine-tune","Before → after fine-tune"))
+    notebox(s,T("Chốt","Takeaway"),T("Kết quả đến từ FINE-TUNE (dữ liệu + mở vision + eval), không chỉ vì đổi sang model mới.",
+              "The gains come from FINE-TUNING (data + unlocked vision + eval), not from a newer model."),0.4,bt+3.0,5.5,0.72,kind="info")
     footer(s,4)
 
     # ---- S5 CONCLUSION ----
