@@ -83,6 +83,7 @@ def build(LANG):
                 for r,isb in _runs(c.text_frame.paragraphs[0],val): _set(r,fs,INK,bold=(isb or (first_bold and j==0)))
     IOU=T("seminar/code/iou_frozen_vs_unfrozen.png","seminar/code/iou_frozen_vs_unfrozen_en.png")
     DET=T("seminar/code/detect_before_after.png","seminar/code/detect_before_after_en.png")
+    QUAL=T("seminar/code/before_after_qual_vn.png","seminar/code/before_after_qual_en.png")
 
     def statcard(slide,l,t,w,h,num,label):
         rect(slide,l,t,w,h,CARD2)
@@ -186,26 +187,27 @@ SCRIPT (~40s): "Our model reaches F1 0.89 on detection, 80% sensitivity (20/25 p
       (T("**Bằng chứng thêm:** đóng băng vision → pIoU 0.015; **mở khoá + train → 0.27** — cách train mới là mấu chốt.",
          "**Extra evidence:** frozen vision → pIoU 0.015; **unlock + train → 0.27** — the training choice is the key."),0),
     ],0.4,bt+0.1,5.5,3.0,base=13,gap=12)
-    image(s,DET,6.1,bt+0.2,w=3.7,caption=T("Trước → sau fine-tune","Before → after fine-tune"))
+    image(s,QUAL,5.9,bt+0.55,w=3.95,caption=T("Cùng 1 ca: trước → sau fine-tune","Same case: before → after fine-tune"))
     notebox(s,T("Chốt","Takeaway"),T("Kết quả đến từ FINE-TUNE (dữ liệu + mở vision + eval), không chỉ vì đổi sang model mới.",
               "The gains come from FINE-TUNING (data + unlocked vision + eval), not from a newer model."),0.4,bt+3.0,5.5,0.72,kind="info")
     footer(s,4)
 
-    # ---- S5 CONCLUSION ----
-    s=prs.slides.add_slide(BLANK); bt=header(s,T("Kết luận","Conclusion"))
+    # ---- S5 FUTURE WORK ----
+    s=prs.slides.add_slide(BLANK); bt=header(s,T("Hướng tương lai","Future work"),
+        T("Mỗi hướng nhắm vá một hạn chế đã thấy","Each direction targets a limitation we observed"))
     bullets(s,[
-      (T("**Chứng minh cơ chế:** region-centric (khoanh-rồi-đọc) khả thi ở **~8B, 1 GPU**.",
-         "**Proof of mechanism:** region-centric (localize-then-read) is feasible at **~8B, 1 GPU**."),0),
-      (T("**Giá trị:** khung đánh giá trung thực + selective prediction — không phải điểm số.",
-         "**Value:** honest evaluation + selective prediction — not the score."),0),
-      (T("**Trung thực:** PoC trên 1 dataset / 1 task, n nhỏ, CI rộng.",
-         "**Honest:** PoC on 1 dataset / 1 task, small n, wide CI."),0),
-      (T("**Tương lai:** ảnh giàu hơn (multi-window, 2.5D) + external validation.",
-         "**Future:** richer images (multi-window, 2.5D) + external validation."),0),
-    ],0.4,bt+0.1,9.2,3.0,base=15,gap=13)
-    notebox(s,T("Câu chốt","Closing"),
-      T("Không hứa đã tới đích — chỉ ra con đường và nói rõ chỗ nào còn dốc.",
-        "We don't claim to have arrived — we map the road and say where it's still steep."),0.4,bt+3.05,9.2,0.6,kind="info")
+      (T("Sót u đồng tỉ trọng (cửa sổ CT rộng) → **multi-window** (cửa sổ gan hẹp) + **2.5D** đưa lại ngữ cảnh 3D.",
+         "Missed isointense tumors (wide CT window) → **multi-window** (narrow liver window) + **2.5D** to restore 3D context."),0),
+      (T("Định vị còn thô (pIoU 0.27) → segmenter chuyên (**MedSAM**) hoặc **polygon** để khoanh khít hơn.",
+         "Coarse localization (pIoU 0.27) → a dedicated segmenter (**MedSAM**) or **polygon** for tighter boxes."),0),
+      (T("Mẫu nhỏ, một bộ dữ liệu → **external validation** (bộ khác) + **calibration** tăng độ tin cậy.",
+         "Small sample, single dataset → **external validation** + **calibration** for reliability."),0),
+      (T("Mới ở mức phát hiện → **grounded report** (báo cáo có dẫn chứng) và mở rộng **đa cơ quan**.",
+         "Detection only for now → **grounded report** (evidence-linked) and **multi-organ** extension."),0),
+    ],0.4,bt+0.15,9.2,2.9,base=13.5,gap=12)
+    notebox(s,T("Tổng kết","Closing"),
+      T("Không hứa đã tới đích — công trình chỉ ra con đường và những chỗ còn dốc.",
+        "We don't claim to have arrived — we map the road and where it's still steep."),0.4,bt+3.05,9.2,0.6,kind="info")
     footer(s,5)
 
     out=f"seminar/cai_tien/slides_5min_{'EN' if EN else 'VN'}.pptx"
