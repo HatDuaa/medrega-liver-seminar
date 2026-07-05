@@ -114,9 +114,9 @@ def build(LANG):
           "Load on the **40B LLM**; “eyes” & “bridge” frozen → localization not sharp"),
         T("**Gemma 4 E4B (~8B)** + **mở khoá vision** (pIoU 0.015→0.27)",
           "**Gemma 4 E4B (~8B)** + **unlock vision** (pIoU 0.015→0.27)")],
-       [T("Chỉ **1 lát trung tâm**, **không ca âm**, box gộp thô",
+       [T("Chỉ **1 lát trung tâm**, **không ca âm** → không đo được model bịa box",
           "Only **1 central slice**, **no negatives**, coarse box"),
-        T("**Đa lát + ca âm + multi-box** (tách từng ổ); split theo bệnh nhân",
+        T("**Đa lát + ca âm** (đo được false-positive); box khít từng ổ, split theo bệnh nhân",
           "**Multi-slice + negatives + multi-box** (per-lesion); split by patient")],
        [T("Chi phí **16×H800** — ngoài tầm sinh viên",
           "Cost **16×H800** — out of reach for a student"),
@@ -141,7 +141,7 @@ def build(LANG):
          "**recall@IoU.25 = 54%** · **False-positive = 1.5%** (rarely invents boxes) · pIoU CI95 [0.19, 0.36]."),0),
       (T("**Không quên:** vẫn hội thoại / JSON / thơ / toán (LoRA giữ trọng số gốc).",
          "**No forgetting:** still chats / JSON / poem / math (LoRA keeps base weights)."),0),
-      (T("Định vị ~0.27 ≈ **cùng khoảng MedRegA (~0.23)** dù model nhỏ 5× — khác dataset, chỉ tham khảo.",
+      (T("Định vị: cùng chuẩn (matched) mình **~0.32** vs MedRegA **~0.23**; pIoU CÓ PHẠT của mình 0.27 còn khắt khe hơn — đích họ lớn + box lỏng, khác dataset.",
          "Localization ~0.27 ≈ **same ballpark as MedRegA (~0.23)** despite 5× smaller — different dataset, reference only."),0),
     ],0.4,cy+1.52,9.2,1.5,base=12.5,gap=8)
     notebox(s,T("⚠ Lưu ý","⚠ Note"),T("n nhỏ (~25 bn dương / 2 âm) → CI rộng; đây là PoC, không tuyên bố lâm sàng.",
@@ -155,7 +155,7 @@ def build(LANG):
 • False-positive 1.5% = trên lát KHÔNG u, hiếm khi bịa box (điểm tốt).
 • CI95 [0.19, 0.36] = khoảng tin cậy 95%, số dao động vì mẫu nhỏ (không phải số cứng).
 • Không quên = nhờ LoRA giữ trọng số gốc → vẫn hội thoại / JSON / thơ / toán.
-• ~0.27 vs MedRegA ~0.23 = cùng khoảng dù nhỏ 5×, KHÁC dataset nên chỉ tham khảo, KHÔNG claim hơn.
+• vs MedRegA (Q&A): IoU 0.23 của họ tính MATCHED-ONLY (không phạt miss — Algorithm 1 Hungarian) + đích chủ yếu CẤU TRÚC LỚN + box LỎNG ("không cần khít", paper). Cùng chuẩn matched: mình ~0.32 > 0.23. pIoU 0.27 của mình CÓ PHẠT nên khắt khe hơn. KHÔNG nói "mình hơn" (khác dataset). KHÔNG nói "họ gộp 1 box" — họ cũng multi-box (Figure 8).
 • Caveat: n nhỏ (25 dương / 2 âm), CI rộng, là PoC — không tuyên bố lâm sàng.
 
 CÂU NÓI (~40s): "Model đạt F1 0.89 ở phát hiện, độ nhạy 80% (20/25 bệnh nhân). Định vị pIoU 0.27 mới trung bình, chúng em không giấu. Điểm cộng: hiếm bịa u (FP 1.5%) và không quên nhờ LoRA. Định vị ngang MedRegA dù nhỏ 5× nhưng khác dữ liệu nên chỉ tham khảo. Đây là PoC, mẫu nhỏ nên còn hạn chế thống kê."

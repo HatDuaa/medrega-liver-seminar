@@ -62,7 +62,7 @@
 | Hạn chế gốc | Cải tiến của nhóm (→Slide) |
 |---|---|
 | Mắt/cầu bất động (định vị không sắc) | **Mở khoá vision** (→Slide 5) |
-| 1 lát trung tâm, không ca âm, box gộp thô | **Đa lát + ca âm + multi-box** (→Slide 6) |
+| 1 lát trung tâm, không ca âm (không đo bịa box) | **Đa lát + ca âm + multi-box** (→Slide 6) |
 | Chi phí 16× H800 ngoài tầm | **LoRA 1 GPU** (→Slide 7) |
 | Per-image, không CI, không abstain | **Per-patient + CI + selective prediction** (→Slide 8) |
 
@@ -200,14 +200,14 @@
 |---|---|---|
 | Quy mô | ~40B, 16× H800 | **~8B, 1×A100** |
 | Vào 3D | 1 lát trung tâm | **đa lát + ca âm** |
-| Nhãn vùng | box gộp thô | **multi-box connected-components** |
+| Nhãn vùng | box lỏng (không cần khít) | **box khít từng ổ (multi-box)** |
 | Đơn vị đánh giá | per-image | **per-patient + CI** |
 | Detect vs Localize | gộp | **tách riêng** |
 | Ca âm / FP | không | **có** |
 | Bất định / triage | không | **selective prediction** |
 | Grounded report | **có** | chưa (→ Future) |
 
-- Định vị: gốc **IoU ~0.23 (tức 23%)** vs mình **pIoU ~0.27** — *CÙNG thang 0–1, cùng khoảng "định vị thô", nhưng khác data/metric (pIoU có phạt) nên KHÔNG so trực tiếp, KHÔNG kết luận hơn/kém.*
+- Định vị: IoU 0.23 của họ (Algorithm 1, Appendix D) tính **MATCHED-only — KHÔNG phạt miss** (miss do Region F1 gánh), trên đích chủ yếu **cấu trúc LỚN + box LỎNG** (paper tự nói "không cần khít"). **Cùng chuẩn matched: mình ~0.32 vs 0.23.** *pIoU 0.27 của mình CÓ PHẠT nên khắt khe hơn. Vẫn khác dataset → chỉ tham khảo, KHÔNG tuyên bố "mình hơn". LƯU Ý: MedRegA cũng dùng multi-box (Figure 8) — KHÔNG phải "box gộp 1 khối".*
 - *pIoU của nhóm **ĐÃ TRỪ điểm** khi thiếu/dư box nên **khắt khe hơn** IoU thường của paper; nếu tính IoU cùng kiểu (matched-pair — ghép từng box dự đoán với box thật gần nhất rồi mới tính IoU, bỏ qua phần thừa/thiếu, nên lạc quan hơn pIoU) nhóm ~**0.32** — nhưng vẫn KHÔNG so trực tiếp vì khác data. Nói cả hai để không bị bắt bẻ "sao không đưa 0.32" lẫn "pIoU phạt thì bất lợi cho ai".* **KHÔNG dùng 0.32 để nói hơn 0.23 — hai bên khác dataset/metric, đặt cạnh chỉ để thấy CÙNG khoảng định vị thô.**
 - **Đóng góp thật:** không phải điểm số — mà là **khung đánh giá trung thực + độ tin cậy** bổ sung cho benchmark của paper.
 - *Câu nói:* "Chúng em không claim đánh bại MedRegA. Đóng góp là biến benchmark định vị thành workflow đánh giá gần lâm sàng: có/không u, khoanh ở đâu, khi nào không nên tin."

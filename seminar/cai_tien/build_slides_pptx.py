@@ -237,7 +237,7 @@ notes(s, "Câu nói: Paper mạnh về quy mô và benchmark. Chúng em không n
 s = newslide(); bt = header(s, "Khoảng trống & bản đồ cải tiến", "Bản lề A → B: 4 hạn chế ↔ 4 cải tiến")
 table(s, ["Hạn chế gốc", "Cải tiến của nhóm (→Slide)"], [
   ["Mắt/cầu bất động (định vị không sắc)", "Mở khoá vision (→S6)"],
-  ["1 lát trung tâm · không ca âm · box gộp thô", "Đa lát + ca âm + multi-box (→S7)"],
+  ["1 lát trung tâm · không ca âm (không đo bịa box)", "Đa lát + ca âm + multi-box (→S7)"],
   ["Chi phí 16× H800 ngoài tầm", "LoRA 1 GPU (→S8)"],
   ["Per-image · không CI · không abstain", "Per-patient + CI + selective prediction (→S9)"],
 ], 0.7, bt+0.25, 8.6, colw=[4.3,4.3], fs=11, hfs=11, rh=0.55)
@@ -355,13 +355,13 @@ s = newslide(); bt = header(s, "So sánh với paper gốc", "Phần D — KHÔN
 table(s, ["Khía cạnh", "MedRegA gốc", "Của nhóm"], [
   ["Quy mô", "~40B, 16×H800", "~8B, 1×A100"],
   ["Vào 3D", "1 lát trung tâm", "đa lát + ca âm"],
-  ["Nhãn vùng", "box gộp thô", "multi-box"],
+  ["Nhãn vùng", "box lỏng (không cần khít)", "box khít từng ổ"],
   ["Đơn vị đánh giá", "per-image", "per-patient + CI"],
   ["Detect vs Localize", "gộp", "tách riêng"],
   ["Ca âm / FP · Bất định", "không", "FP + selective prediction"],
   ["Grounded report", "có", "chưa (→Future)"],
 ], 0.4, bt, 5.6, colw=[1.8,1.9,1.9], fs=8.8, hfs=9, rh=0.33)
-notebox(s, "Định vị — đọc đúng cách", "Gốc IoU ~0.23 vs mình pIoU ~0.27 (cùng thang 0–1) — khác data/metric, KHÔNG so trực tiếp, KHÔNG kết luận hơn/kém. pIoU có PHẠT nên khắt khe hơn.",
+notebox(s, "Định vị — đọc đúng cách", "IoU 0.23 của họ tính MATCHED-only (không phạt miss) trên đích LỚN + box LỎNG. Cùng chuẩn matched: mình ~0.32 vs 0.23; pIoU 0.27 của mình CÓ PHẠT nên khắt khe hơn. Khác dataset → chỉ tham khảo.",
         6.15, bt+0.1, 3.5, 1.5, kind="info")
 notebox(s, "Đóng góp thật", "Không phải điểm số — mà là khung đánh giá trung thực + độ tin cậy, bổ sung cho benchmark của paper.",
         6.15, bt+1.75, 3.5, 1.1, kind="info")
