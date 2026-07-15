@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Foundation và chống leakage"
-status: pending
+status: completed
 priority: P1
 effort: 1-2d
 dependencies: []
@@ -60,10 +60,10 @@ validate_law_pair(law_id, aid, corpus) -> bool
 
 ## Success Criteria
 
-- [ ] Parse được hai JSON chính thức.
-- [ ] Sinh đúng 50 `PrivateCase`.
-- [ ] Leakage tests pass.
-- [ ] `.env` không xuất hiện trong Git status.
+- [x] Parse được hai JSON chính thức.
+- [x] Sinh đúng 50 `PrivateCase`.
+- [x] Leakage tests pass.
+- [x] `.env` không xuất hiện trong Git status.
 
 ## Risk Assessment
 

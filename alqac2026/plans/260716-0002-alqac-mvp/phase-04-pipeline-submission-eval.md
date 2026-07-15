@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Pipeline, submission và đánh giá"
-status: pending
+status: completed
 priority: P1
 effort: 2d
 dependencies: [2, 3]
@@ -17,6 +17,8 @@ Ghép các module thành CLI end-to-end, chọn evidence, tạo submission và k
 
 - Dry-run mặc định.
 - Không cho model bịa `chunk_id` hoặc `{law_id, aid}`.
+- Tách hẳn `draft.json` và `submission.json`; official validator không có debug bypass.
+- Official builder bắt buộc `RunManifest` và tự suy eligibility từ backend registry.
 - Submission đủ case, không trùng, không field thừa.
 - Mọi run có config snapshot và audit log.
 
@@ -43,7 +45,7 @@ deduplicate_chunks(chunks) -> list[RetrievedChunk]
 rank_case_evidence(chunks, outcome) -> list[RetrievedChunk]
 select_case_evidence(chunks, max_items=5) -> list[str]
 build_submission(predictions) -> list[dict]
-validate_submission(rows, expected_case_ids, law_corpus) -> ValidationReport
+validate_submission(rows, expected_case_ids, law_corpus, run_metadata) -> ValidationReport
 write_submission_atomic(path, rows) -> None
 ```
 
@@ -51,17 +53,18 @@ write_submission_atomic(path, rows) -> None
 
 1. Orchestrate case/batch pipeline.
 2. Evidence selector chỉ nhận ID từ retrieved chunks.
-3. Validator kiểm tra schema, ID đúng case và law pair tồn tại.
+3. Validator kiểm tra JSON Schema, ID đúng case, evidence chunk thuộc raw cache đúng `case_id`, law pair tồn tại và backend có hợp lệ theo luật thi không.
 4. Thêm CLI `inspect-data`, `run-public`, `validate-submission`.
 5. Chạy offline 50 case; không network.
-6. Kiểm tra thủ công 5-10 case trước lần nộp đầu.
+6. Kiểm tra thủ công 5-10 case, fixture valid/invalid và phản hồi `/submissions/validate` trước lần nộp đầu.
+7. Sau quality gate, nộp đúng một lần lên Public track theo phê duyệt của user.
 
 ## Success Criteria
 
-- [ ] End-to-end offline không lỗi.
-- [ ] Submission validator từ chối ID bịa, case thiếu/trùng và nhãn sai.
-- [ ] File cuối tên `submission.json` và được ghi atomic.
-- [ ] Không tự upload/submit.
+- [x] End-to-end offline không lỗi.
+- [x] Submission validator từ chối ID bịa, case thiếu/trùng và nhãn sai.
+- [x] File cuối tên `submission.json` và được ghi atomic.
+- [x] Chỉ upload một lần sau khi validator và review đạt; lưu phản hồi server.
 
 ## Risk Assessment
 

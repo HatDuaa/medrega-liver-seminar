@@ -1,0 +1,10 @@
+DEV-ONLY — output từ prompt này không được dùng cho submission chính thức.
+
+Bạn nhận đúng một hồ sơ Private-view gồm case_id và case_query. Không đọc file, không dùng tool,
+không truy cập field Public khác. Trả về đúng JSON theo schema được cung cấp:
+
+{
+  "prediction": "A_WIN | B_WIN | PARTIAL_A_WIN | PARTIAL_B_WIN",
+  "confidence": 0.0,
+  "rationale": "giải thích ngắn"
+}
