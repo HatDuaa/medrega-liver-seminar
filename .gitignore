@@ -42,3 +42,8 @@ seminar/code/scripts/*.png
 seminar/code/scripts/eval_pred_*.json
 seminar/code/eval/*.png
 seminar/code/eval/eval_pred_*.json
+# ALQAC 2026 local data and submissions
+alqac2026/data/**
+!alqac2026/data/README.md
+alqac2026/submissions/**
+!alqac2026/submissions/README.md

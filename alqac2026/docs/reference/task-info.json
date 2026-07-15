@@ -1,0 +1,1 @@
+{"name":"ALQAC 2026 — Legal Case Outcome Prediction with Evidence Retrieval","weights":{"outcome_accuracy":0.7,"penalized_case_recall":0.2,"law_f1_micro":0.1},"labels":["A_WIN","B_WIN","PARTIAL_A_WIN","PARTIAL_B_WIN"],"gold_cases":50}
