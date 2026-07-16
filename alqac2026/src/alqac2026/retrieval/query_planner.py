@@ -16,11 +16,33 @@ def _case_focus(case_query: str, max_chars: int = 420) -> str:
     return focus[:max_chars].rstrip(" ,.;")
 
 
-def build_initial_queries(case: PrivateCase, max_queries: int = 2) -> list[str]:
+QUERY_STRATEGIES = frozenset({"legacy_v0", "decision_v1"})
+
+
+def build_initial_queries(
+    case: PrivateCase,
+    max_queries: int = 2,
+    *,
+    strategy: str = "legacy_v0",
+) -> list[str]:
     if not isinstance(case, PrivateCase):
         raise TypeError("query planner only accepts PrivateCase")
     if not 1 <= max_queries <= 2:
         raise ValueError("deterministic baseline supports one or two queries")
+    if strategy not in QUERY_STRATEGIES:
+        raise ValueError(f"unknown query strategy: {strategy}")
+    if strategy == "decision_v1":
+        queries = [
+            (
+                "quyết định của Tòa án tuyên xử chấp nhận toàn bộ chấp nhận một phần "
+                "không chấp nhận bác yêu cầu khởi kiện yêu cầu phản tố"
+            ),
+            (
+                "nhận định của Hội đồng xét xử yêu cầu nguyên đơn bị đơn có căn cứ "
+                "không có căn cứ chấp nhận không chấp nhận"
+            ),
+        ]
+        return queries[:max_queries]
     focus = _case_focus(case.case_query)
     queries = [
         f"chấp nhận yêu cầu khởi kiện của nguyên đơn; quyết định của Tòa án; {focus}",

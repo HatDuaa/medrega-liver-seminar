@@ -62,6 +62,32 @@ class OfflinePipelineTests(unittest.TestCase):
                 retrieval_client=self.client,
             )
 
+    def test_pipeline_uses_selected_query_strategy(self) -> None:
+        case = PrivateCase("cached", "tranh chấp đất")
+        query = build_initial_queries(
+            case, max_queries=1, strategy="decision_v1"
+        )[0]
+        self.cache.store("cached", query, {"results": [
+            {
+                "score": 2.0,
+                "text": "QUYẾT ĐỊNH: Không chấp nhận yêu cầu khởi kiện.",
+                "chunk_id": "decision",
+            }
+        ]})
+        prediction = run_case(
+            case,
+            law_index=self.index,
+            retrieval_client=self.client,
+            config=PipelineConfig(
+                max_queries=1,
+                max_case_evidence=1,
+                max_law_evidence=1,
+                query_strategy="decision_v1",
+            ),
+        )
+        self.assertEqual(prediction.prediction, "B_WIN")
+        self.assertEqual(prediction.case_evidence, ("decision",))
+
 
 if __name__ == "__main__":
     unittest.main()

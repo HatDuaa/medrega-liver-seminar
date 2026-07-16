@@ -19,6 +19,46 @@ class OutcomePredictorTests(unittest.TestCase):
                 self.assertEqual(result.prediction, expected)
         self.assertEqual(predict_outcome(case).prediction, "A_WIN")
 
+    def test_party_request_is_not_treated_as_a_court_decision(self) -> None:
+        case = PrivateCase("c1", "tranh chấp bồi thường nhiều khoản thiệt hại")
+        result = predict_outcome(
+            case,
+            [
+                RetrievedChunk(
+                    1.0,
+                    "Nguyên đơn trình bày và yêu cầu Tòa án chấp nhận toàn bộ yêu cầu khởi kiện.",
+                    "chunk",
+                )
+            ],
+        )
+        self.assertEqual(result.prediction, "PARTIAL_A_WIN")
+        self.assertIn("Fallback", result.rationale)
+
+    def test_court_decision_handles_partial_and_counterclaim(self) -> None:
+        case = PrivateCase("c1", "tranh chấp hợp đồng")
+        partial_a = predict_outcome(
+            case,
+            [
+                RetrievedChunk(
+                    1.0,
+                    "QUYẾT ĐỊNH: Chấp nhận một phần yêu cầu khởi kiện của nguyên đơn.",
+                    "a",
+                )
+            ],
+        )
+        partial_b = predict_outcome(
+            case,
+            [
+                RetrievedChunk(
+                    1.0,
+                    "QUYẾT ĐỊNH: Không chấp nhận yêu cầu khởi kiện; chấp nhận một phần yêu cầu phản tố.",
+                    "b",
+                )
+            ],
+        )
+        self.assertEqual(partial_a.prediction, "PARTIAL_A_WIN")
+        self.assertEqual(partial_b.prediction, "PARTIAL_B_WIN")
+
     def test_rejects_non_private_case_and_invalid_chunk_items(self) -> None:
         case = PrivateCase("c1", "query")
         with self.assertRaises(TypeError):

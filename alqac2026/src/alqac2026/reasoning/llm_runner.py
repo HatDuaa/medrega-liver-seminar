@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -16,6 +18,14 @@ BACKEND_REGISTRY: dict[str, dict[str, Any]] = {
         "eligible_for_submission": True,
         "kind": "algorithm",
     },
+    "deterministic_v1": {
+        "eligible_for_submission": True,
+        "kind": "algorithm",
+    },
+    "naive_bayes_v1": {
+        "eligible_for_submission": False,
+        "kind": "experimental_public_calibration_dev_only",
+    },
     "codex_cli": {
         "eligible_for_submission": False,
         "kind": "proprietary_dev_only",
@@ -25,6 +35,13 @@ BACKEND_REGISTRY: dict[str, dict[str, Any]] = {
         "kind": "proprietary_dev_only",
     },
 }
+
+
+def codex_executable() -> str:
+    executable = shutil.which("codex.cmd" if os.name == "nt" else "codex")
+    if executable is None:
+        raise RuntimeError("codex CLI executable was not found")
+    return executable
 
 
 def backend_is_submission_eligible(backend_id: str) -> bool:
@@ -60,11 +77,11 @@ class OutcomeRunner(Protocol):
 
 class DeterministicRunner:
     metadata = BackendMetadata(
-        backend_id="deterministic_v0",
-        model_id="bm25-rule-baseline",
-        version="0.1.0",
+        backend_id="deterministic_v1",
+        model_id="decision-retrieval-rule-baseline",
+        version="0.2.0",
         eligible_for_submission=True,
-        prompt_hash=hashlib.sha256(b"deterministic_v0_rules_2026-07-16").hexdigest(),
+        prompt_hash=hashlib.sha256(b"deterministic_v1_rules_2026-07-16").hexdigest(),
     )
 
     def predict(
@@ -131,7 +148,7 @@ class CodexCliRunner:
         try:
             completed = subprocess.run(
                 [
-                    "codex",
+                    codex_executable(),
                     "exec",
                     "--sandbox",
                     "read-only",
@@ -144,6 +161,7 @@ class CodexCliRunner:
                 ],
                 input=prompt,
                 text=True,
+                encoding="utf-8",
                 capture_output=True,
                 timeout=timeout_s,
                 cwd=cwd,
@@ -151,7 +169,10 @@ class CodexCliRunner:
                 check=False,
             )
             if completed.returncode != 0:
-                raise RuntimeError(f"codex CLI exited with {completed.returncode}")
+                detail = (completed.stderr or completed.stdout).strip()[-1200:]
+                raise RuntimeError(
+                    f"codex CLI exited with {completed.returncode}: {detail}"
+                )
             envelope = _parse_json_object(output_path.read_text(encoding="utf-8"))
             return CliRunResult(
                 metadata=BackendMetadata(
@@ -199,6 +220,7 @@ class ClaudeCliRunner:
             ],
             input=prompt,
             text=True,
+            encoding="utf-8",
             capture_output=True,
             timeout=timeout_s,
             cwd=cwd,

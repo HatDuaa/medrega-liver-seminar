@@ -51,7 +51,6 @@ def _fallback_from_query(query: str) -> OutcomePrediction:
         "tra no",
         "hop dong vay",
         "tien hui",
-        "boi thuong thiet hai",
         "hoan tra",
     )
     if any(pattern in normalized for pattern in strong_claims):
@@ -60,11 +59,64 @@ def _fallback_from_query(query: str) -> OutcomePrediction:
             confidence=0.38,
             rationale="Fallback: yêu cầu nghĩa vụ thanh toán/bồi thường có chứng cứ mô tả rõ.",
         )
-    return OutcomePrediction(
-        prediction="A_WIN",
-        confidence=0.30,
-        rationale="Fallback: chưa có tín hiệu quyết định đủ mạnh; dùng prior nguyên đơn.",
+    partial_claims = (
+        "boi thuong",
+        "thua ke",
+        "chia di san",
+        "chia tai san",
+        "quyen su dung dat",
+        "huy giay chung nhan",
+        "nhieu khoan",
     )
+    if any(pattern in normalized for pattern in partial_claims):
+        return OutcomePrediction(
+            prediction="PARTIAL_A_WIN",
+            confidence=0.34,
+            rationale="Fallback: tranh chấp thường có nhiều hạng mục nên ưu tiên khả năng chấp nhận một phần.",
+        )
+    return OutcomePrediction(
+        prediction="PARTIAL_A_WIN",
+        confidence=0.30,
+        rationale="Fallback: chưa có tín hiệu phán quyết; dùng prior chấp nhận một phần.",
+    )
+
+
+_JUDICIAL_MARKERS = (
+    "quyet dinh",
+    "tuyen xu",
+    "hoi dong xet xu nhan dinh",
+    "hoi dong xet xu xet thay",
+    "xet thay",
+    "vi cac le tren",
+)
+_PARTY_SPEECH_MARKERS = (
+    "nguyen don trinh bay",
+    "bi don trinh bay",
+    "nguyen don yeu cau",
+    "bi don yeu cau",
+    "yeu cau toa an",
+    "khong dong y boi thuong",
+    "tai don khoi kien",
+    "kiem sat vien de nghi",
+)
+
+
+def _decision_evidence(chunks: list[RetrievedChunk] | tuple[RetrievedChunk, ...]) -> str:
+    accepted: list[str] = []
+    for chunk in chunks:
+        normalized = _ascii_text(chunk.text)
+        judicial_positions = [
+            normalized.find(marker)
+            for marker in _JUDICIAL_MARKERS
+            if marker in normalized
+        ]
+        if judicial_positions:
+            accepted.append(normalized[min(judicial_positions) :])
+            continue
+        if any(marker in normalized for marker in _PARTY_SPEECH_MARKERS):
+            continue
+        accepted.append(normalized)
+    return " ".join(accepted)
 
 
 def predict_outcome(
@@ -77,7 +129,9 @@ def predict_outcome(
     if not chunks:
         return _fallback_from_query(case.case_query)
 
-    evidence = _ascii_text("\n".join(chunk.text for chunk in chunks))
+    evidence = _decision_evidence(chunks)
+    if not evidence:
+        return _fallback_from_query(case.case_query)
     partial_a = _count_patterns(evidence, _PARTIAL_A_PATTERNS)
     partial_b = _count_patterns(evidence, _PARTIAL_B_PATTERNS)
     negative = _count_patterns(evidence, _NEGATIVE_PATTERNS)

@@ -37,6 +37,15 @@ python -m alqac2026.cli validate-submission --input submissions/submission.json
 
 `submission.json` chỉ được tạo bởi backend `deterministic_v0` hoặc backend hợp lệ khác trong registry. Codex/Claude CLI là adapter phát triển, luôn bị official validator từ chối.
 
+Tạo draft Quality v1 và chạy đánh giá chéo nội bộ mà không đụng tới file submission:
+
+```powershell
+python -m alqac2026.cli run-draft --query-strategy decision_v1 --max-queries 1
+python -m alqac2026.cli run-cv-draft --query-strategy decision_v1 --max-queries 1 --alpha 0.7
+```
+
+Các lệnh này chỉ ghi vào `data/runs/`. Backend Naive Bayes dùng nhãn Public để đánh giá leave-one-out nên đang là dev-only, không đủ điều kiện nộp bài cho đến khi ban tổ chức xác nhận chính sách.
+
 ## Cấu trúc hiện tại
 
 - `docs/`: luật thi, thông báo, quyết định và ghi chú.
@@ -61,7 +70,7 @@ MVP Phase 1–4 đã qua **35 kiểm thử** và được nộp Public đúng **
 
 Retrieval ledger ghi nhận **50 lượt hoàn tất** và **1 lượt HTTP 429**. Đây là số lượt gọi Retrieval API, không phải số lần nộp bài; client hiện giữ khoảng cách toàn cục 6 giây và không tự retry.
 
-Đây mới là mốc baseline. Phase 5 sẽ tập trung cải thiện chất lượng truy hồi, bằng chứng và dự đoán; dự án chưa hoàn thành cuộc thi.
+Quality v1 đạt **54% Outcome Accuracy leave-one-out** (`27/50`) so với baseline 40%, nhưng đây là metric dev-only chứ không phải điểm leaderboard. Không có lượt upload mới; lớp `PARTIAL_B` vẫn chưa có true positive.
 
 ## An toàn vận hành
 
@@ -71,3 +80,5 @@ Retrieval ledger ghi nhận **50 lượt hoàn tất** và **1 lượt HTTP 429*
 - `.env`, dữ liệu, run trace và submission đều bị Git ignore.
 
 > Cảnh báo: số lượt gọi Retrieval API bị cộng dồn qua các lần thử và có thể làm giảm điểm. Không chạy thử hàng loạt trước khi có chiến lược truy hồi và cache.
+
+> Trạng thái hiện tại: cả 50 vụ đã chạm hard cap cục bộ 2 attempt/vụ. Không gọi Retrieval API thêm nếu chưa có ngân sách/quy định mới.

@@ -1,7 +1,7 @@
 ---
 title: "ALQAC 2026 MVP Implementation"
 description: "Xây pipeline Private-safe từ case_query đến submission, có cache và kiểm soát ngân sách API."
-status: in-progress
+status: completed
 priority: P1
 effort: 9-12d
 branch: master
@@ -53,9 +53,9 @@ PrivateCase(case_id, case_query)
 | 2 | [Cache, API client và ngân sách](./phase-02-retrieval-safety.md) | Completed |
 | 3 | [Baseline reasoning và tìm luật](./phase-03-baseline-reasoning-law.md) | Completed |
 | 4 | [Pipeline, submission và đánh giá](./phase-04-pipeline-submission-eval.md) | Completed |
-| 5 | [Agentic retrieval có kiểm soát](./phase-05-agentic-retrieval.md) | Optional |
+| 5 | [Quality v1 có kiểm soát](./phase-05-agentic-retrieval.md) | Completed |
 
-Tiến độ: **4/4 phase MVP hoàn tất**; Phase 5 là vòng tối ưu tùy chọn và chưa bắt đầu.
+Tiến độ: **5/5 phase hoàn tất**. MVP và vòng Quality v1 đã được code, test, review và ghi nhận; vòng model/retrieval tiếp theo cần một plan mới.
 
 ## Cấu trúc đích
 
@@ -126,6 +126,14 @@ Plan validator đạt `0 errors, 0 warnings`. Red-team contract/fact/flow review
 - Law precision/recall: `26.0% / 9.1%`.
 - Retrieval ledger: 50 attempt hoàn tất, 1 HTTP 429 ở pilot 5 giây; không retry.
 - Code gate: 35/35 test pass; re-review PASS 8.7/10, không còn Critical.
+
+## Kết quả Quality v1 — không upload
+
+- Đã version query planner, bổ sung source-aware evidence/outcome, resolver trích dẫn luật, diagnostics và CLI tạo draft/CV dưới `data/runs/`.
+- Đã dùng nốt 49 API attempt còn lại cho `decision_v1`; toàn bộ 50 vụ hiện đã chạm hard cap 2 attempt/vụ.
+- Deterministic v1 vẫn đạt 40%; Naive Bayes leave-one-out đạt 52%; hybrid override hẹp đạt 54% (`27/50`).
+- Mốc 54% là dev-only, không phải điểm leaderboard và không đủ điều kiện tạo submission trước khi xác nhận chính sách dùng nhãn Public.
+- Không có lượt upload mới; file submission đầu tiên giữ nguyên SHA-256.
 
 ## Rủi ro chính
 

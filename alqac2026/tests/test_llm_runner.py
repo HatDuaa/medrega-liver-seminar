@@ -32,7 +32,7 @@ class LlmRunnerTests(unittest.TestCase):
 
     def test_deterministic_runner_metadata_is_submission_eligible(self) -> None:
         runner = DeterministicRunner()
-        self.assertEqual(runner.metadata.backend_id, "deterministic_v0")
+        self.assertEqual(runner.metadata.backend_id, "deterministic_v1")
         self.assertTrue(runner.metadata.eligible_for_submission)
         self.assertTrue(backend_is_submission_eligible(runner.metadata.backend_id))
         result = runner.predict(PrivateCase("c1", "hop dong vay tra no"), [])

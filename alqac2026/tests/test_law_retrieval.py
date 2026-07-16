@@ -1,7 +1,7 @@
 import unittest
 
 from alqac2026.law.index import LawIndex
-from alqac2026.law.retriever import retrieve_law_evidence
+from alqac2026.law.retriever import resolve_law_citations, retrieve_law_evidence
 from alqac2026.schemas import LawArticle
 
 
@@ -27,6 +27,27 @@ class LawRetrievalTests(unittest.TestCase):
         for top_k in (0, -1):
             with self.subTest(top_k=top_k), self.assertRaises(ValueError):
                 index.search("alpha", top_k=top_k)
+
+    def test_direct_citation_is_resolved_before_bm25(self) -> None:
+        index = LawIndex([
+            LawArticle("91/2015/QH13", 100, "phạm vi điều chỉnh"),
+            LawArticle("91/2015/QH13", 101, "nguyên tắc áp dụng"),
+            LawArticle("91/2015/QH13", 102, "quyền dân sự"),
+            LawArticle("92/2015/QH13", 200, "phạm vi tố tụng"),
+        ])
+        citations = resolve_law_citations(
+            index, "Căn cứ Điều 2 Bộ luật Dân sự năm 2015 để giải quyết."
+        )
+        self.assertEqual([(item.law_id, item.aid) for item in citations], [
+            ("91/2015/QH13", 101)
+        ])
+        evidence = retrieve_law_evidence(
+            index,
+            "Căn cứ Điều 2 Bộ luật Dân sự năm 2015; nội dung tố tụng.",
+            top_k=2,
+        )
+        self.assertEqual((evidence[0].law_id, evidence[0].aid), ("91/2015/QH13", 101))
+        self.assertEqual(len({(item.law_id, item.aid) for item in evidence}), 2)
 
 
 if __name__ == "__main__":

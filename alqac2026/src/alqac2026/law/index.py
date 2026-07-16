@@ -61,9 +61,20 @@ class LawIndex:
         self.b = b
         self._term_counts: list[Counter[str]] = []
         self._lengths: list[int] = []
+        self._articles_by_number: dict[tuple[str, int], LawArticle] = {}
+        self._number_by_pair: dict[tuple[str, int], int] = {}
+        next_number_by_law: Counter[str] = Counter()
         document_frequency: Counter[str] = Counter()
         for article in self.articles:
-            counts = Counter(tokenize(article.text))
+            next_number_by_law[article.law_id] += 1
+            article_number = next_number_by_law[article.law_id]
+            self._articles_by_number[(article.law_id, article_number)] = article
+            self._number_by_pair[(article.law_id, article.aid)] = article_number
+            counts = Counter(
+                tokenize(
+                    f"{article.text} {article.law_id} điều {article_number}"
+                )
+            )
             self._term_counts.append(counts)
             length = sum(counts.values())
             self._lengths.append(length)
@@ -74,6 +85,12 @@ class LawIndex:
             term: math.log(1.0 + (total - frequency + 0.5) / (frequency + 0.5))
             for term, frequency in document_frequency.items()
         }
+
+    def article_by_number(self, law_id: str, article_number: int) -> LawArticle | None:
+        return self._articles_by_number.get((law_id, article_number))
+
+    def article_number(self, article: LawArticle) -> int | None:
+        return self._number_by_pair.get((article.law_id, article.aid))
 
     def search(self, query: str, *, top_k: int = 5) -> list[LawHit]:
         if top_k < 1:

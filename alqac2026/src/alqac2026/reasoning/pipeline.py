@@ -16,6 +16,7 @@ class PipelineConfig:
     max_queries: int = 2
     max_case_evidence: int = 2
     max_law_evidence: int = 3
+    query_strategy: str = "legacy_v0"
 
 
 def collect_cached_or_network_chunks(
@@ -24,9 +25,12 @@ def collect_cached_or_network_chunks(
     *,
     allow_network: bool,
     max_queries: int,
+    query_strategy: str = "legacy_v0",
 ) -> list[RetrievedChunk]:
     chunks: list[RetrievedChunk] = []
-    for query in build_initial_queries(case, max_queries=max_queries):
+    for query in build_initial_queries(
+        case, max_queries=max_queries, strategy=query_strategy
+    ):
         try:
             chunks.extend(client.retrieve(case.case_id, query, allow_network=allow_network))
         except NetworkDisabled:
@@ -50,6 +54,7 @@ def run_case(
         retrieval_client,
         allow_network=allow_network,
         max_queries=config.max_queries,
+        query_strategy=config.query_strategy,
     )
     runner = outcome_runner or DeterministicRunner()
     outcome = runner.predict(case, chunks)
